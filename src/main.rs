@@ -26,6 +26,16 @@ fn replace_bytes(state: &mut [u8; 16]) {
     }
 }
 
+fn shift_rows(state: &mut [u8; 16]) {
+    // b1 b5 b9 b13
+    // Row 1 left shift
+    state.swap(1, 5); state.swap(5, 9); state.swap(9, 13);
+    // Row 2 left shift
+    state.swap(2, 10); state.swap(6, 14);
+    // Row 3
+    state.swap(3, 7); state.swap(3, 11); state.swap(3, 15);
+}
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
@@ -39,6 +49,9 @@ fn main() {
     let mut state = input;
 
     replace_bytes(&mut state);
-
     println!("{:?}", state);
+
+    shift_rows(&mut state);
+    println!("{:?}", state);
+
 }
