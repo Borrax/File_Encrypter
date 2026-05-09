@@ -1,3 +1,8 @@
+use std::env::args;
+
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = args().collect();
+
+    let file_path = args.get(1).expect("Missing file path");
+    println!("{}", file_path);
 }
