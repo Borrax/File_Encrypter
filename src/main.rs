@@ -36,6 +36,27 @@ fn shift_rows(state: &mut [u8; 16]) {
     state.swap(3, 7); state.swap(3, 11); state.swap(3, 15);
 }
 
+fn display_byte_array(state: &[u8; 16]) {
+    let mut grid: [[String;4];4] = Default::default();
+    let mut result = String::new();
+
+    let mut col: usize = 0;
+    let mut row: usize = 0;
+    for (i, val) in state.iter().enumerate() {
+        grid[row][col] = val.to_string();
+
+        col = i / grid.len();
+        row = i % grid.len();
+    }
+
+    for row in grid {
+        result.push_str(&row.join(" "));
+        result.push('\n');
+    }
+
+    println!("{}", result);
+}
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
@@ -49,9 +70,9 @@ fn main() {
     let mut state = input;
 
     replace_bytes(&mut state);
-    println!("{:?}", state);
+    display_byte_array(&state);
 
     shift_rows(&mut state);
-    println!("{:?}", state);
+    display_byte_array(&state);
 
 }
