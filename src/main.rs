@@ -51,12 +51,21 @@ fn x_gf(b: u8) -> u8 {
 fn mix_columns(s: &mut [u8; 16]) {
     for col in 0..4 {
         let row = col * 4;
+        // Get the column members
         let (b0, b1, b2, b3) = (s[row], s[row+1], s[row+2], s[row+3]);
 
+        // Multiply each column byte to a fixed matrix
+        // in Galois Field
         s[row] = x_gf(b0) ^ x_gf(b1) ^ b1 ^ b2 ^ b3;
         s[row + 1] = b0 ^ x_gf(b1) ^ x_gf(b2) ^ b2 ^ b3;
         s[row + 2] = b0 ^ b1 ^ x_gf(b2) ^ x_gf(b3) ^ b3;
         s[row + 3] = x_gf(b0) ^ b0 ^ b1 ^ b2 ^ x_gf(b3);
+    }
+}
+
+fn add_round_key(state: &mut [u8; 16], key: &[u8; 16]) {
+    for (b, k) in state.iter_mut().zip(key.iter()) {
+        *b ^= k;
     }
 }
 
@@ -89,6 +98,8 @@ fn main() {
 
     let input: [u8; 16] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
                            0x12, 0x13, 0x14, 0x15];
+    
+    let key = input;
 
     // makes a full copy because it is a fixed size array
     let mut state = input;
@@ -101,4 +112,8 @@ fn main() {
 
     mix_columns(&mut state);
     display_byte_array(&state);
+
+    add_round_key(&mut state, &key);
+    display_byte_array(&state);
+    
 }
