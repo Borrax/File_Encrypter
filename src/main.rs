@@ -36,7 +36,11 @@ fn shift_rows(state: &mut [u8; 16]) {
     state.swap(3, 7); state.swap(3, 11); state.swap(3, 15);
 }
 
+/// Multiplies a byte by 2 in Galois Field 2^8
+///
+/// See also [`mix_columns`]
 fn x_gf(b: u8) -> u8 {
+    // reducing the byte back to GF if the high bit is 1
     if b & 0x80 != 0 { (b << 1) ^ 0x1b } else { b << 1 }
 }
 
