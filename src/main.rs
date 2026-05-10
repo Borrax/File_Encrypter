@@ -104,16 +104,19 @@ fn main() {
     // makes a full copy because it is a fixed size array
     let mut state = input;
 
-    replace_bytes(&mut state);
-    display_byte_array(&state);
-
-    shift_rows(&mut state);
-    display_byte_array(&state);
-
-    mix_columns(&mut state);
-    display_byte_array(&state);
-
     add_round_key(&mut state, &key);
-    display_byte_array(&state);
+
+    // Several rounds as later the key will be 15x16 bytes
+    for _ in 1..14 {
+        replace_bytes(&mut state);
+        shift_rows(&mut state);
+        mix_columns(&mut state);
+        add_round_key(&mut state, &key);
+    }
+
+    // No mix last round
+    replace_bytes(&mut state);
+    shift_rows(&mut state);
+    add_round_key(&mut state, &key);
     
 }
