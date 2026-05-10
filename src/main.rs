@@ -44,6 +44,10 @@ fn x_gf(b: u8) -> u8 {
     if b & 0x80 != 0 { (b << 1) ^ 0x1b } else { b << 1 }
 }
 
+/// Diffusion of the byte matrix columns
+///
+///# Arguments
+///* `s` - A 16 byte array that is essentially the 4x4 byte matrix
 fn mix_columns(s: &mut [u8; 16]) {
     for row in 0..4 {
         let col = row * 4;
