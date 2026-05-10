@@ -36,6 +36,22 @@ fn shift_rows(state: &mut [u8; 16]) {
     state.swap(3, 7); state.swap(3, 11); state.swap(3, 15);
 }
 
+fn x_gf(b: u8) -> u8 {
+    if b & 0x80 != 0 { (b << 1) ^ 0x1b } else { b << 1 }
+}
+
+fn mix_columns(s: &mut [u8; 16]) {
+    for row in 0..4 {
+        let col = row * 4;
+        let (b0, b1, b2, b3) = (s[col], s[col+1], s[col+2], s[col+3]);
+
+        s[col] = x_gf(b0) ^ x_gf(b1) ^ b1 ^ b2 ^ b3;
+        s[col + 1] = b0 ^ x_gf(b1) ^ x_gf(b2) ^ b2 ^ b3;
+        s[col + 2] = b0 ^ b1 ^ x_gf(b2) ^ x_gf(b3) ^ b3;
+        s[col + 3] = x_gf(b0) ^ b0 ^ b1 ^ b2 ^ x_gf(b3);
+    }
+}
+
 fn display_byte_array(state: &[u8; 16]) {
     let mut grid: [[String;4];4] = Default::default();
     let mut result = String::new();
