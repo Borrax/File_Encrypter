@@ -49,14 +49,14 @@ fn x_gf(b: u8) -> u8 {
 ///# Arguments
 ///* `s` - A 16 byte array that is essentially the 4x4 byte matrix
 fn mix_columns(s: &mut [u8; 16]) {
-    for row in 0..4 {
-        let col = row * 4;
-        let (b0, b1, b2, b3) = (s[col], s[col+1], s[col+2], s[col+3]);
+    for col in 0..4 {
+        let row = col * 4;
+        let (b0, b1, b2, b3) = (s[row], s[row+1], s[row+2], s[row+3]);
 
-        s[col] = x_gf(b0) ^ x_gf(b1) ^ b1 ^ b2 ^ b3;
-        s[col + 1] = b0 ^ x_gf(b1) ^ x_gf(b2) ^ b2 ^ b3;
-        s[col + 2] = b0 ^ b1 ^ x_gf(b2) ^ x_gf(b3) ^ b3;
-        s[col + 3] = x_gf(b0) ^ b0 ^ b1 ^ b2 ^ x_gf(b3);
+        s[row] = x_gf(b0) ^ x_gf(b1) ^ b1 ^ b2 ^ b3;
+        s[row + 1] = b0 ^ x_gf(b1) ^ x_gf(b2) ^ b2 ^ b3;
+        s[row + 2] = b0 ^ b1 ^ x_gf(b2) ^ x_gf(b3) ^ b3;
+        s[row + 3] = x_gf(b0) ^ b0 ^ b1 ^ b2 ^ x_gf(b3);
     }
 }
 
@@ -99,4 +99,6 @@ fn main() {
     shift_rows(&mut state);
     display_byte_array(&state);
 
+    mix_columns(&mut state);
+    display_byte_array(&state);
 }
