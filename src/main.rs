@@ -103,6 +103,11 @@ fn display_byte_array(state: &[u8; 16]) {
     println!("{}", result);
 }
 
+/// Encrypts a block of 16 bytes using the AES algorithm 
+///
+/// # Arguments:
+/// * `block`: A byte array to be encrypted
+/// * `keys`: An array of 16 byte chunks each to be used for the block's encryption
 fn aes_encrypt_block(block: &[u8; 16], keys: &[[u8; 16]; 15]) -> [u8; 16] {
     let mut state = *block;
 
