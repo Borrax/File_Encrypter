@@ -34,6 +34,11 @@ fn replace_bytes(state: &mut [u8; 16]) {
     }
 }
 
+/// Shifts eatch of the rows of a 4x4 matrix by its index
+///
+/// # Arguments:
+/// * `state`: An array of bytes which is the flattened matrix
+///            to have its rows shifted
 fn shift_rows(state: &mut [u8; 16]) {
     // b1 b5 b9 b13
     // Row 1 left shift
