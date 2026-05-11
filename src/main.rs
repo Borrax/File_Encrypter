@@ -103,6 +103,29 @@ fn display_byte_array(state: &[u8; 16]) {
     println!("{}", result);
 }
 
+fn aes_encrypt_block(block: &[u8; 16], keys: &[[u8; 16]; 15]) -> [u8; 16] {
+    let mut state = *block;
+
+    add_round_key(&mut state, &keys[0]);
+
+    // Several rounds as later the key will be 15x16 bytes
+    // Using raw numbers for slightly faster encryption
+    // instead of being related to the len of keys
+    for key_idx in 1..14 {
+        replace_bytes(&mut state);
+        shift_rows(&mut state);
+        mix_columns(&mut state);
+        add_round_key(&mut state, &keys[key_idx]);
+    }
+
+    // No mix last round
+    replace_bytes(&mut state);
+    shift_rows(&mut state);
+    add_round_key(&mut state, &keys[14]);
+
+    state
+}
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
@@ -112,24 +135,9 @@ fn main() {
     let input: [u8; 16] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
                            0x12, 0x13, 0x14, 0x15];
     
-    let key = input;
+    let keys = [input; 15];
+    let block = input;
 
-    // makes a full copy because it is a fixed size array
-    let mut state = input;
-
-    add_round_key(&mut state, &key);
-
-    // Several rounds as later the key will be 15x16 bytes
-    for _ in 1..14 {
-        replace_bytes(&mut state);
-        shift_rows(&mut state);
-        mix_columns(&mut state);
-        add_round_key(&mut state, &key);
-    }
-
-    // No mix last round
-    replace_bytes(&mut state);
-    shift_rows(&mut state);
-    add_round_key(&mut state, &key);
-    
+    let encrypted = aes_encrypt_block(&block, &keys);
+    display_byte_array(&encrypted);
 }
