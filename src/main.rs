@@ -22,6 +22,9 @@ const SBOX: [u8; 256] = [
     0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16,
 ];
 
+const RCON: [u8; 11] = [0x00,0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];
+
+
 /// Replaces an array of bytes with their match in a lookup table
 ///
 /// # Arguments:
@@ -103,6 +106,52 @@ fn display_byte_array(state: &[u8; 16]) {
     println!("{}", result);
 }
 
+fn expand_key(key: &[u8; 32]) -> [[u8; 16]; 15] {
+    let mut word = [[0u8; 4]; 60];
+
+    for i in 0..8 {
+        let col = 4*i;
+        word[i] = [key[col], key[col+1], key[col+2], key[col+3]];
+    }
+
+    for i in 8..60 {
+        let mut temp = word[i - 1];
+
+        if i % 8 == 0 {
+            temp = [
+                SBOX[temp[1] as usize] ^ RCON[i/8],
+                SBOX[temp[2] as usize],
+                SBOX[temp[3] as usize],
+                SBOX[temp[0] as usize]
+            ];
+        } else if i % 8 == 4 {
+            temp = [
+                SBOX[temp[0] as usize],
+                SBOX[temp[1] as usize],
+                SBOX[temp[2] as usize],
+                SBOX[temp[3] as usize]
+            ];
+        }
+
+        word[i] = [
+            word[i - 8][0]^temp[0],
+            word[i - 8][1]^temp[1],
+            word[i - 8][2]^temp[2],
+            word[i - 8][3]^temp[3]
+        ];
+    }
+
+    let mut keys = [[0u8; 16]; 15];
+
+    for round in 0..15 {
+        for j in 0..4 {
+            keys[round][4*j..4*j+4].copy_from_slice(&word[4*round + j]);
+        }
+    }
+
+    keys
+}
+
 /// Encrypts a block of 16 bytes using the AES algorithm 
 ///
 /// # Arguments:
@@ -140,7 +189,11 @@ fn main() {
     let input: [u8; 16] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
                            0x12, 0x13, 0x14, 0x15];
     
-    let keys = [input; 15];
+    let mut key = [0u8; 32];
+    key[..16].copy_from_slice(&input);
+    key[16..].copy_from_slice(&input);
+
+    let keys = expand_key(&key);
     let block = input;
 
     let encrypted = aes_encrypt_block(&block, &keys);
