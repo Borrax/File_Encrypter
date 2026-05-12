@@ -79,6 +79,7 @@ fn mix_columns(s: &mut [u8; 16]) {
     }
 }
 
+/// Adding a key in Galois Field by XORing to the state bytes
 fn add_round_key(state: &mut [u8; 16], key: &[u8; 16]) {
     for (b, k) in state.iter_mut().zip(key.iter()) {
         *b ^= k;
