@@ -108,6 +108,9 @@ fn display_byte_array(state: &[u8; 16]) {
     println!("{}", result);
 }
 
+/// Expanding a 32 bytes key to 240 bytes to be added to the state
+///
+/// See also [`aes_encrypt_block`]
 fn expand_key(key: &[u8; 32]) -> [[u8; 16]; 15] {
     let mut word = [[0u8; 4]; 60];
 
