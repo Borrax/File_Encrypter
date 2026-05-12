@@ -41,7 +41,7 @@ fn replace_bytes(state: &mut [u8; 16]) {
 ///
 /// # Arguments:
 /// * `state`: An array of bytes which is the flattened matrix
-///            to have its rows shifted
+///  to have its rows shifted
 fn shift_rows(state: &mut [u8; 16]) {
     // b1 b5 b9 b13
     // Row 1 left shift
@@ -114,6 +114,7 @@ fn display_byte_array(state: &[u8; 16]) {
 fn expand_key(key: &[u8; 32]) -> [[u8; 16]; 15] {
     let mut word = [[0u8; 4]; 60];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..8 {
         let col = 4*i;
         word[i] = [key[col], key[col+1], key[col+2], key[col+3]];
@@ -170,6 +171,7 @@ fn aes_encrypt_block(block: &[u8; 16], keys: &[[u8; 16]; 15]) -> [u8; 16] {
     // Several rounds as later the key will be 15x16 bytes
     // Using raw numbers for slightly faster encryption
     // instead of being related to the len of keys
+    #[allow(clippy::needless_range_loop)]
     for key_idx in 1..14 {
         replace_bytes(&mut state);
         shift_rows(&mut state);
