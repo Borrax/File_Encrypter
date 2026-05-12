@@ -86,8 +86,9 @@ fn add_round_key(state: &mut [u8; 16], key: &[u8; 16]) {
     }
 }
 
+/// Displaying a byte array as a 4x4 matrix
 fn display_byte_array(state: &[u8; 16]) {
-    let mut grid: [[String;4];4] = Default::default();
+    let mut grid: [[String; 4]; 4] = Default::default();
     let mut result = String::new();
 
     let mut col: usize = 0;
