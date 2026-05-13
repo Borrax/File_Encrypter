@@ -187,20 +187,33 @@ fn aes_encrypt_block(block: &[u8; 16], keys: &[[u8; 16]; 15]) -> [u8; 16] {
     state
 }
 
-fn aes256_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
+/// Ensures every AES encryption gets a unique input
+///
+/// # Arguments
+/// * `key`: the 256 bit key used to encrypt
+/// * `nonce`: Random 12 bytes value to be used with the key
+/// * `input`: Data to be encrypted
+///
+/// See also [`aes_encrypt_block`]
+fn aes_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
     let keys = expand_key(key);
     let mut result = Vec::with_capacity(input.len());
-    let mut counter: u32 = 1;
+    // To be concatinated to the nonce
+    // Starting from 1 because 0 is for the authentication
+    let mut counter: u32 = 1; 
 
+    // Each 16 bytes of the input XOR with the AES encrypted key
     for chunk in input.chunks(16) {
         let mut block = [0u8; 16];
         block[..12].copy_from_slice(nonce);
+        // to be bytes creates a big endian byte array ensuring
+        // counter is serialized regardless of CPU architecture
         block[12..].copy_from_slice(&counter.to_be_bytes());
 
-        let keystream = aes_encrypt_block(&block, &keys);
+        let enc_key = aes_encrypt_block(&block, &keys);
 
         for (i, &byte) in chunk.iter().enumerate() {
-            result.push(byte ^ keystream[i]);
+            result.push(byte ^ enc_key[i]);
         }
 
         counter = counter.wrapping_add(1);
