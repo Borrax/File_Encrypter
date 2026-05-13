@@ -187,6 +187,28 @@ fn aes_encrypt_block(block: &[u8; 16], keys: &[[u8; 16]; 15]) -> [u8; 16] {
     state
 }
 
+fn aes256_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
+    let keys = expand_key(key);
+    let mut result = Vec::with_capacity(input.len());
+    let mut counter: u32 = 1;
+
+    for chunk in input.chunks(16) {
+        let mut block = [0u8; 16];
+        block[..12].copy_from_slice(nonce);
+        block[12..].copy_from_slice(&counter.to_be_bytes());
+
+        let keystream = aes_encrypt_block(&block, &keys);
+
+        for (i, &byte) in chunk.iter().enumerate() {
+            result.push(byte ^ keystream[i]);
+        }
+
+        counter = counter.wrapping_add(1);
+    }
+
+    result
+}
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
