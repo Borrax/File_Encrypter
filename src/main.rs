@@ -222,6 +222,32 @@ fn aes_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
     result
 }
 
+// GHASH
+
+
+fn gf_mul(mut x: u128, mut y: u128) -> u128 {
+    let mut result = 0u128;
+    // Reduction polynom for ghash (x^128 + x^7 + x^2 + x + 1) in GF
+    let r = 0xe1000000_00000000_00000000_00000000u128;
+
+    for _ in 0..128 {
+        if y & (1 << 127) != 0 {
+            result ^= x;
+        }
+
+        let lsb = x & 1;
+        x >>= 1;
+
+        if lsb != 0 {
+            x ^= r;
+        }
+
+        y <<= 1;
+    }
+
+    result
+}
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
