@@ -55,7 +55,7 @@ fn shift_rows(state: &mut [u8; 16]) {
 /// Multiplies a byte by 2 in Galois Field 2^8
 ///
 /// See also [`mix_columns`]
-fn x_gf(b: u8) -> u8 {
+fn x2_gf8(b: u8) -> u8 {
     // reducing the byte back to GF if the high bit is 1
     if b & 0x80 != 0 { (b << 1) ^ 0x1b } else { b << 1 }
 }
@@ -72,10 +72,10 @@ fn mix_columns(s: &mut [u8; 16]) {
 
         // Multiply each column byte to a fixed matrix
         // in Galois Field
-        s[row] = x_gf(b0) ^ x_gf(b1) ^ b1 ^ b2 ^ b3;
-        s[row + 1] = b0 ^ x_gf(b1) ^ x_gf(b2) ^ b2 ^ b3;
-        s[row + 2] = b0 ^ b1 ^ x_gf(b2) ^ x_gf(b3) ^ b3;
-        s[row + 3] = x_gf(b0) ^ b0 ^ b1 ^ b2 ^ x_gf(b3);
+        s[row] = x2_gf8(b0) ^ x2_gf8(b1) ^ b1 ^ b2 ^ b3;
+        s[row + 1] = b0 ^ x2_gf8(b1) ^ x2_gf8(b2) ^ b2 ^ b3;
+        s[row + 2] = b0 ^ b1 ^ x2_gf8(b2) ^ x2_gf8(b3) ^ b3;
+        s[row + 3] = x2_gf8(b0) ^ b0 ^ b1 ^ b2 ^ x2_gf8(b3);
     }
 }
 
@@ -224,22 +224,23 @@ fn aes_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
 
 // GHASH
 
-
-fn gf_mul(mut x: u128, mut y: u128) -> u128 {
+/// Multiplies two 128 bit values together in Galois Field(2^128)
+fn gf128_mul(mut x: u128, mut y: u128) -> u128 {
     let mut result = 0u128;
-    // Reduction polynom for ghash (x^128 + x^7 + x^2 + x + 1) in GF
-    let r = 0xe1000000_00000000_00000000_00000000u128;
+    // Reduction polynomial for ghash (x^128 + x^7 + x^2 + x + 1) in GF(2^128)
+    let reduce_poly = 0xe1000000_00000000_00000000_00000000u128;
 
+    // Loop from most significant bit of y to least
     for _ in 0..128 {
         if y & (1 << 127) != 0 {
             result ^= x;
         }
 
-        let lsb = x & 1;
+        let least_sig_bit = x & 1;
         x >>= 1;
 
-        if lsb != 0 {
-            x ^= r;
+        if least_sig_bit != 0 {
+            x ^= reduce_poly;
         }
 
         y <<= 1;
