@@ -249,27 +249,38 @@ fn gf128_mul(mut x: u128, mut y: u128) -> u128 {
     result
 }
 
-fn ghash(hash: u128, aad: &[u8], cipher_text: &[u8]) -> u128 {
+/// Gets authentication tags using hash key, AAD and ciphered text byte
+/// Uses Horner's method
+/// The tag is used when decrypting to verify the sent information has not been tempered with.
+///
+/// # Arguments:
+/// * `hash_key`: Derived by encrypting zeros with AES and the session key
+/// * `aad`: Additional authenticated data (like packet header data to verify nobody has tempered
+/// with it)
+/// * `cipher_text`: The encrypted version of the text (well a byte of it)
+fn get_authentication_tag(hash_key: u128, aad: &[u8], cipher_text: &[u8]) -> u128 {
     let mut tag = 0u128;
 
     // Process the additional authenticated data
     for chunk in aad.chunks(16) {
         let mut block = [0u8; 16];
         block[..chunk.len()].copy_from_slice(chunk);
-        tag ^= u128::from_be_bytes(block);
-        tag = gf128_mul(tag, hash);
+        tag ^= u128::from_be_bytes(block); // 8 bits x 16
+        tag = gf128_mul(tag, hash_key);
     }
 
     for chunk in cipher_text.chunks(16) {
         let mut block = [0u8; 16];
         block[..chunk.len()].copy_from_slice(chunk);
-        tag ^= u128::from_be_bytes(block);
-        tag = gf128_mul(tag, hash);
+        tag ^= u128::from_be_bytes(block); // 8 bits x 16
+        tag = gf128_mul(tag, hash_key);
     }
 
+    // *8 converts the w/e bytes to bits, <<64 gets the len into the upper 64 bits
+    // binds the exact sizes of aad and cyphered text
     let len_block = ((aad.len() as u128 * 8) << 64) | (cipher_text.len() as u128 * 8);
     tag ^= len_block;
-    tag = gf128_mul(tag, hash);
+    tag = gf128_mul(tag, hash_key);
     tag
 }
 
