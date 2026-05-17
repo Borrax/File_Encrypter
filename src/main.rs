@@ -284,9 +284,8 @@ fn get_authentication_tag(hash_key: u128, aad: &[u8], cipher_text: &[u8]) -> u12
     tag
 }
 
-/// Putting together the AES and GCM
-fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8 12],
-    plain_input: &[u8], aad: &[u8]) -> (Vec<u8>, [u8; 16]) {
+/// Encrypting plain text byte using AES with GCM authenticatio
+fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8; 12], plain_input: &[u8], aad: &[u8]) -> (Vec<u8>, [u8; 16]) {
     let keys = expand_key(key);
 
     let block = [0u8; 16];
@@ -295,6 +294,15 @@ fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8 12],
     let crypted_text = aes_ctr_encrypt(key, nonce, plain_input);
     
     let mut ctr_block = [0u8; 16];
+    ctr_block[..12].copy_from_slice(nonce);
+    ctr_block[15] = 0;
+    
+    let encrypred_ctr_block = aes_encrypt_block(&ctr_block, &keys);
+    let tag = get_authentication_tag(hashed_key, aad, &crypted_text);
+    let tag_u128 = u128::from_be_bytes(encrypred_ctr_block) ^ tag;
+    let tag_bytes = tag_u128.to_be_bytes();
+    
+    (crypted_text, tag_bytes)
 }
 
 fn main() {
