@@ -224,7 +224,7 @@ fn aes_ctr_encrypt(key: &[u8; 32], nonce: &[u8; 12], input: &[u8]) -> Vec<u8> {
 
 // GHASH
 
-/// Multiplies two 128 bit values together in Galois Field(2^128)
+/// Multiplies two 128 bit values in Galois Field(2^128)
 fn gf128_mul(mut x: u128, mut y: u128) -> u128 {
     let mut result = 0u128;
     // Reduction polynomial for ghash (x^128 + x^7 + x^2 + x + 1) in GF(2^128)
@@ -247,6 +247,20 @@ fn gf128_mul(mut x: u128, mut y: u128) -> u128 {
     }
 
     result
+}
+
+fn ghash(hash: u128, aad: &[u8], cipher_text: &[u8]) -> u128 {
+    let mut tag = 0u128;
+
+    // Process the additional authenticated data
+    for chunk in aad.chunks(16) {
+        let mut block = [0u8; 16];
+        block[..chunk.len()].copy_from_slice(chunk);
+        tag ^= u128::from_be_bytes(block);
+        tag = gf128_mul(tag, hash);
+    }
+
+    tag
 }
 
 fn main() {
