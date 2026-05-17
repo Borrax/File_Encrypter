@@ -260,6 +260,16 @@ fn ghash(hash: u128, aad: &[u8], cipher_text: &[u8]) -> u128 {
         tag = gf128_mul(tag, hash);
     }
 
+    for chunk in cipher_text.chunks(16) {
+        let mut block = [0u8; 16];
+        block[..chunk.len()].copy_from_slice(chunk);
+        tag ^= u128::from_be_bytes(block);
+        tag = gf128_mul(tag, hash);
+    }
+
+    let len_block = ((aad.len() as u128 * 8) << 64) | (cipher_text.len() as u128 * 8);
+    tag ^= len_block;
+    tag = gf128_mul(tag, hash);
     tag
 }
 
