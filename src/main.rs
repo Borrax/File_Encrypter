@@ -284,23 +284,35 @@ fn get_authentication_tag(hash_key: u128, aad: &[u8], cipher_text: &[u8]) -> u12
     tag
 }
 
-/// Encrypting plain text byte using AES with GCM authenticatio
+/// Encrypting plain text byte using AES with GCM authenticatioo
+///
+/// # Arguments:
+/// * `key`: 32 bytes plain key to be used for the encryption
+/// * `nonce`: Random 12 bytes number to be used with the key and the text
+/// * `plain_input`: the raw byte to be encrypted
+/// * `aad`: Additional authentication data (to be used to verify the received information hasn't
+///   been temepered with)
+///
+/// See also [`get_authentication_tag`] and [`aes_ctr_encrypt`]
 fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8; 12], plain_input: &[u8], aad: &[u8]) -> (Vec<u8>, [u8; 16]) {
-    let keys = expand_key(key);
+    let keys = expand_key(key); // expanding the 32 byte key to 15 rounds of 16 bytes
 
+    // Encrypt the key and serialize (Big Endian)
     let block = [0u8; 16];
     let hashed_key = u128::from_be_bytes(aes_encrypt_block(&block, &keys));
 
+    // Using the raw key and nonce encrypt the plain input by AES without authentication
     let crypted_text = aes_ctr_encrypt(key, nonce, plain_input);
     
+    // Initial coutner block: 12 bytes of nonce padded with zeros and last byte is 1
     let mut ctr_block = [0u8; 16];
     ctr_block[..12].copy_from_slice(nonce);
-    ctr_block[15] = 0;
+    ctr_block[15] = 1;
     
     let encrypred_ctr_block = aes_encrypt_block(&ctr_block, &keys);
-    let tag = get_authentication_tag(hashed_key, aad, &crypted_text);
+    let tag = get_authentication_tag(hashed_key, aad, &crypted_text); 
     let tag_u128 = u128::from_be_bytes(encrypred_ctr_block) ^ tag;
-    let tag_bytes = tag_u128.to_be_bytes();
+    let tag_bytes = tag_u128.to_be_bytes(); // converting it back to [u8; 16]
     
     (crypted_text, tag_bytes)
 }
