@@ -317,6 +317,17 @@ fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8; 12], plain_input: &[u8], aad: &[
     (crypted_text, tag_bytes)
 }
 
+/// Decrypts encrypted text with authentication
+///
+/// # Arguments:
+/// * `key`: 32 bytes plain key to be used for the encryption
+/// * `nonce`: Random 12 bytes number to be used with the key and the text
+/// * `plain_input`: the raw byte to be encrypted
+/// * `aad`: Additional authentication data (to be used to verify the received information hasn't
+///   been temepered with)
+/// # `expected_tag`: The expected tag to authenticate with the decryption
+///
+/// See also [`get_authentication_tag`] and [`aes_gcm_encrypt`]
 fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
     crypted_text: &[u8], aad: &[u8], expected_tag: &[u8; 16]) -> Option<Vec<u8>> {
     let keys = expand_key(key); // expanding the 32 byte key to 15 rounds of 16 bytes
