@@ -1,4 +1,5 @@
 use std::env::args;
+use rand::{rng, Rng};
 
 /// Look up table AES used to replace bytes
 ///
@@ -353,6 +354,13 @@ fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
     Some(aes_ctr_encrypt(key, nonce, crypted_text))
 }
 
+fn generate_nonce() -> [u8; 12] {
+    let mut result = [0u8; 12];
+    rng().fill_bytes(&mut result);
+
+    result
+}
+
 
 fn main() {
     // let args: Vec<String> = args().collect();
@@ -360,16 +368,15 @@ fn main() {
     // let file_path = args.get(1).expect("Missing file path");
     // println!("{}", file_path);
 
-    let input: [u8; 16] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
-                           0x12, 0x13, 0x14, 0x15];
+    // let input: [u8; 16] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11,
+    //                        0x12, 0x13, 0x14, 0x15];
     
-    let mut key = [0u8; 32];
-    key[..16].copy_from_slice(&input);
-    key[16..].copy_from_slice(&input);
-
-    let keys = expand_key(&key);
-    let block = input;
-
-    let encrypted = aes_encrypt_block(&block, &keys);
-    display_byte_array(&encrypted);
+    let text_byte = b"Hello there";
+    let key = b"test keytest ketest ketest keyyy";
+    let nonce = generate_nonce();
+    // println!("{:?}", text_byte);
+    println!("{:?}", nonce);
+    //
+    // let (crypted_text, tag) = aes_ctr_encrypt(key, nonce, input);
+    // display_byte_array(&encrypted);
 }
