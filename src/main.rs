@@ -317,6 +317,32 @@ fn aes_gcm_encrypt(key: &[u8; 32], nonce: &[u8; 12], plain_input: &[u8], aad: &[
     (crypted_text, tag_bytes)
 }
 
+fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
+    crypted_text: &[u8], aad: &[u8], expected_tag: &[u8; 16]) -> Option<Vec<u8>> {
+    let keys = expand_key(key); // expanding the 32 byte key to 15 rounds of 16 bytes
+
+    // Encrypt the key and serialize (Big Endian)
+    let block = [0u8; 16];
+    let hashed_key = u128::from_be_bytes(aes_encrypt_block(&block, &keys));
+
+    // Initial coutner block: 12 bytes of nonce padded with zeros and last byte is 1
+    let mut ctr_block = [0u8; 16];
+    ctr_block[..12].copy_from_slice(nonce);
+    ctr_block[15] = 1;
+    
+    let encrypred_ctr_block = aes_encrypt_block(&ctr_block, &keys);
+    let tag = get_authentication_tag(hashed_key, aad, crypted_text); 
+    let tag_u128 = u128::from_be_bytes(encrypred_ctr_block) ^ tag;
+    let tag_bytes = tag_u128.to_be_bytes(); // converting it back to [u8; 16]
+    
+    if tag_bytes != *expected_tag {
+        return None;
+    }
+
+    Some(aes_ctr_encrypt(key, nonce, crypted_text))
+}
+
+
 fn main() {
     // let args: Vec<String> = args().collect();
     //
