@@ -384,5 +384,9 @@ fn main() {
     let (crypted_text, tag) = aes_gcm_encrypt(key, &nonce, text_byte, aad);
 
     println!("Crypted text: {:?}", crypted_text);
-    println!("Tag: {:?}", tag)
+    println!("Tag: {:?}", tag);
+
+    let decrypted_bytes = aes_gcm_decrypt(key, &nonce, &crypted_text, aad, &tag);
+
+    println!("Decrypted bytes: {:?}", decrypted_bytes);
 }
