@@ -354,6 +354,9 @@ fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
     Some(aes_ctr_encrypt(key, nonce, crypted_text))
 }
 
+/// Generates the 12 bytes nonce needed for encryption and decryption
+///
+/// See also [`aes_gcm_encrypt`] and [`aes_gcm_decrypt`]
 fn generate_nonce() -> [u8; 12] {
     let mut result = [0u8; 12];
     rng().fill_bytes(&mut result);
