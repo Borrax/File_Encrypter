@@ -377,9 +377,12 @@ fn main() {
     let text_byte = b"Hello there";
     let key = b"test keytest ketest ketest keyyy";
     let nonce = generate_nonce();
-    // println!("{:?}", text_byte);
-    println!("{:?}", nonce);
+    let aad = b"my_checksum";
+    println!("Raw text: {:?}", text_byte);
+    println!("Nonce: {:?}", nonce);
     //
-    // let (crypted_text, tag) = aes_ctr_encrypt(key, nonce, input);
-    // display_byte_array(&encrypted);
+    let (crypted_text, tag) = aes_gcm_encrypt(key, &nonce, text_byte, aad);
+
+    println!("Crypted text: {:?}", crypted_text);
+    println!("Tag: {:?}", tag)
 }
