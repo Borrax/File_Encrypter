@@ -16,7 +16,7 @@ fn main() {
     let aad = b"my_checksum";
     println!("Raw text: {:?}", text_byte);
     println!("Nonce: {:?}", nonce);
-    //
+
     let (crypted_text, tag) = aes_gcm_encrypt(key, &nonce, text_byte, aad);
 
     println!("Crypted text: {:?}", crypted_text);
