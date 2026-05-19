@@ -3,13 +3,6 @@
 version = 4
 
 [[package]]
-name = "File_Encrypter"
-version = "0.1.0"
-dependencies = [
- "rand",
-]
-
-[[package]]
 name = "anyhow"
 version = "1.0.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -52,6 +45,13 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "file_encrypter"
+version = "0.1.0"
+dependencies = [
+ "rand",
+]
 
 [[package]]
 name = "foldhash"
