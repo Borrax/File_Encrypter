@@ -1,4 +1,4 @@
-# File_Encrypter
+# File Encrypter
 
 ![rust logo](https://rust-lang.org/logos/rust-logo-512x512.png)
 
@@ -11,7 +11,10 @@ cargo run -- <file_path>
 ```
 
 ### Testing
-To Be Added
+Run integration tests:
+```bash
+cargo test --test integration_tests
+```
 
 ### Viewing documentation
 ```bash
