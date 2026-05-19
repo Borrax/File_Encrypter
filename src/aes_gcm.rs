@@ -1,4 +1,6 @@
 use rand::{rng, Rng};
+use std::fs::{write, read, File, OpenOptions};
+use std::io::{Read, Write, BufReader, BufWriter};
 
 /// Look up table AES used to replace bytes
 ///
@@ -365,4 +367,20 @@ pub fn generate_nonce() -> [u8; 12] {
     rng().fill_bytes(&mut result);
 
     result
+}
+
+pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32]) -> std::io::Result<()> {
+    let raw_file = read(input_path)?;
+    let nonce = generate_nonce();
+    let aad = b"";
+
+    let (encrypted, tag) = aes_gcm_encrypt(key, &nonce, &raw_file, aad);
+
+    let mut output_bytes = Vec::new();
+    output_bytes.extend_from_slice(&nonce);
+    output_bytes.extend_from_slice(&encrypted);
+    output_bytes.extend_from_slice(&tag);
+
+    write(output_path, &output_bytes)?;
+    Ok(())
 }
