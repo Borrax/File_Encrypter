@@ -369,6 +369,12 @@ pub fn generate_nonce() -> [u8; 12] {
     result
 }
 
+/// Encrypts a file using AES256-GCM algorithm
+///
+/// # Arguments:
+/// * `input path`: The path to the file to be encrypted
+/// * `output path`: Where the output encrypted file to be generated
+/// * `key`: Raw encryption key
 pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32]) -> std::io::Result<()> {
     let raw_file = read(input_path)?;
     let nonce = generate_nonce();
