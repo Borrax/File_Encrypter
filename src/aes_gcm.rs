@@ -392,14 +392,16 @@ pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &
 }
 
 
-pub fn decrypt_file(input_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
+pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
     let encrypted_file = read(input_path)?;
 
     let nonce: [u8; 12] = encrypted_file[..12].try_into().unwrap();
     let tag: [u8; 16] = encrypted_file[encrypted_file.len() - 16..].try_into().unwrap();
     let main_data = &encrypted_file[12..encrypted_file.len() - 16];
 
-    let decrypted_data = aes_gcm_decrypt(key, &nonce, main_data, aad, &tag);
+    let decrypted_data = aes_gcm_decrypt(key, &nonce, main_data, aad, &tag).unwrap();
+
+    write(output_path, &decrypted_data)?;
 
     Ok(())
 }
