@@ -392,6 +392,13 @@ pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &
 }
 
 
+/// Decrypts a file using AES256-GCM algorithm
+///
+/// # Arguments:
+/// * `input path`: The path to the file to be encrypted
+/// * `output path`: Where the output encrypted file to be generated
+/// * `key`: Raw encryption key
+/// * `aad`: The additional authentication data to encrypt the file with
 pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
     let encrypted_file = read(input_path)?;
 
