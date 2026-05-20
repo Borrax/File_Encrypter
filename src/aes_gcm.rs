@@ -1,4 +1,5 @@
 use rand::{rng, Rng};
+use std::env;
 use std::fs::{write, read, File, OpenOptions};
 use std::io::{Read, Write, BufReader, BufWriter};
 
@@ -411,4 +412,17 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
     write(output_path, &decrypted_data)?;
 
     Ok(())
+}
+
+
+pub fn read_terminal() -> (String, String) {
+    let args: Vec<String> = env::args().collect();
+    let mut output_path: String = env::current_dir().unwrap().display().to_string();
+    let input_path = args.get(1).expect("Missing file path");
+
+    if args.len() > 2 {
+        output_path = args.get(2).unwrap().to_string();
+    }
+
+    (input_path.to_string(), output_path)
 }
