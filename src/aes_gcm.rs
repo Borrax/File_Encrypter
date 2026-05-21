@@ -424,12 +424,14 @@ pub fn read_terminal() -> (String, String) {
     let args: Vec<String> = env::args().collect();
     let mut output_path: String = env::current_dir().unwrap().display().to_string();
     let mut input_path = None;
+    let mut should_encrypt = false;
 
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "-i" => { input_path = Some(args[i + 1]); i += 2; }
             "-o" => { output_path = args[i + 1]; i += 2; }
+            "-e" => { should_encrypt = true; i += 1; }
             _ => { break; }
         }
     }
