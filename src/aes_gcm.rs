@@ -415,6 +415,15 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 }
 
 
+fn print_usage() {
+    println!("\
+    Usage: file_encrypter [OPTIONS]
+        -i: Input file path (mandatory)
+        -o: Output file path. If not provided the current work directory would be used.
+        -e: If file should be encrypted. If not provided it would be decrypted by default.
+        -k: Encryption key (mandatory)
+        ");
+}
 
 /// Reads inputs from the terminal and returns them as a tuple
 ///
@@ -431,10 +440,11 @@ pub fn read_terminal() -> (String, String) {
     while i < args.len() {
         match args[i].as_str() {
             "-i" => { input_path = Some(args[i + 1].clone()); i += 2; }
-            "-o" => { output_path = args[i + 1]; i += 2; }
+            "-o" => { output_path = args[i + 1].clone(); i += 2; }
             "-e" => { should_encrypt = true; i += 1; }
             "-k" => { key = Some(args[i + 1].clone()); i += 2; }
-            _ => { break; }
+            "-h" => { print_usage(); std::process::exit(0); }
+            _ => { print_usage(); std::process::exit(1); }
         }
     }
 
