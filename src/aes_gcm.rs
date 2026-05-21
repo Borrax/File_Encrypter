@@ -425,6 +425,7 @@ pub fn read_terminal() -> (String, String) {
     let mut output_path: String = env::current_dir().unwrap().display().to_string();
     let mut input_path = None;
     let mut should_encrypt = false;
+    let mut key = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -432,6 +433,7 @@ pub fn read_terminal() -> (String, String) {
             "-i" => { input_path = Some(args[i + 1]); i += 2; }
             "-o" => { output_path = args[i + 1]; i += 2; }
             "-e" => { should_encrypt = true; i += 1; }
+            "-k" => { key = Some(args[i + 1]); i += 2; }
             _ => { break; }
         }
     }
