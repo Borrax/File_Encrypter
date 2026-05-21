@@ -415,14 +415,19 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 }
 
 
+
+/// Reads inputs from the terminal and returns them as a tuple
+///
+/// If output path is not provided the location where the program is started from
+/// is used
 pub fn read_terminal() -> (String, String) {
     let args: Vec<String> = env::args().collect();
     let mut output_path: String = env::current_dir().unwrap().display().to_string();
-    let input_path = args.get(1).expect("Missing file path");
+    let input_path = args.get(1).expect("Missing file path").to_string();
 
     if args.len() > 2 {
         output_path = args.get(2).unwrap().to_string();
     }
 
-    (input_path.to_string(), output_path)
+    (input_path, output_path)
 }
