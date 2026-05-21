@@ -423,11 +423,17 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 pub fn read_terminal() -> (String, String) {
     let args: Vec<String> = env::args().collect();
     let mut output_path: String = env::current_dir().unwrap().display().to_string();
-    let input_path = args.get(1).expect("Missing file path").to_string();
+    let mut input_path = None;
 
-    if args.len() > 2 {
-        output_path = args.get(2).unwrap().to_string();
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-i" => { input_path = Some(args[i + 1]); i += 2; }
+            "-o" => { output_path = args[i + 1]; i += 2; }
+            _ => { break; }
+        }
     }
 
-    (input_path, output_path)
+    ("".to_string(), "".to_string())
+    // (input_path, output_path)
 }
