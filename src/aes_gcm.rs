@@ -430,13 +430,22 @@ pub fn read_terminal() -> (String, String) {
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
-            "-i" => { input_path = Some(args[i + 1]); i += 2; }
+            "-i" => { input_path = Some(args[i + 1].clone()); i += 2; }
             "-o" => { output_path = args[i + 1]; i += 2; }
             "-e" => { should_encrypt = true; i += 1; }
-            "-k" => { key = Some(args[i + 1]); i += 2; }
+            "-k" => { key = Some(args[i + 1].clone()); i += 2; }
             _ => { break; }
         }
     }
+
+    if key.is_none() {
+        panic!("Missing encryption key!");
+    }
+
+    if input_path.is_none() {
+        panic!("Missing input path");
+    }
+
 
     ("".to_string(), "".to_string())
     // (input_path, output_path)
