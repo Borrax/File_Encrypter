@@ -415,6 +415,7 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 }
 
 
+/// Prints basic usage of the CLI tool
 fn print_usage() {
     println!("\
     Usage: file_encrypter [OPTIONS]
