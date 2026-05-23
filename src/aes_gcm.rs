@@ -3,6 +3,13 @@ use std::env;
 use std::fs::{write, read, File, OpenOptions};
 use std::io::{Read, Write, BufReader, BufWriter};
 
+#[derive(Default)]
+struct UserInput {
+    input_path: String,
+    output_path: String,
+    key: String,
+    should_encrypt: bool,
+}
 /// Look up table AES used to replace bytes
 ///
 /// See also [`replace_bytes`]
