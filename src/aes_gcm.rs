@@ -438,7 +438,7 @@ fn print_usage() {
     Usage: file_encrypter [OPTIONS]
         -i: Input file path (mandatory)
         -o: Output file path. If not provided the current work directory would be used.
-        -e: If file should be encrypted. If not provided it would be decrypted by default.
+        -e: If file should be encrypted. If not provided it would be encrypted by default.
         -k: Encryption key (mandatory)
         ");
 }
@@ -473,4 +473,8 @@ pub fn read_terminal() -> UserInputData {
 
 
     input_data
+}
+
+
+pub fn run_application(input_data: &UserInputData) {
 }
