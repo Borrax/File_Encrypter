@@ -447,34 +447,30 @@ fn print_usage() {
 ///
 /// If output path is not provided the location where the program is started from
 /// is used
-pub fn read_terminal() -> (String, String) {
+pub fn read_terminal() -> UserInputData {
+    let mut input_data = UserInputData::default();
     let args: Vec<String> = env::args().collect();
-    let mut output_path: String = 
-    let mut input_path = None;
-    let mut should_encrypt = false;
-    let mut key = None;
 
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
-            "-i" => { input_path = Some(args[i + 1].clone()); i += 2; }
-            "-o" => { output_path = args[i + 1].clone(); i += 2; }
-            "-e" => { should_encrypt = true; i += 1; }
-            "-k" => { key = Some(args[i + 1].clone()); i += 2; }
+            "-i" => { input_data.input_path = Some(args[i + 1].clone()); i += 2; }
+            "-o" => { input_data.output_path = args[i + 1].clone(); i += 2; }
+            "-e" => { input_data.should_encrypt = true; i += 1; }
+            "-k" => { input_data.key = Some(args[i + 1].clone()); i += 2; }
             "-h" => { print_usage(); std::process::exit(0); }
             _ => { print_usage(); std::process::exit(1); }
         }
     }
 
-    if key.is_none() {
+    if input_data.key.is_none() {
         panic!("Missing encryption key!");
     }
 
-    if input_path.is_none() {
+    if input_data.input_path.is_none() {
         panic!("Missing input path");
     }
 
 
-    ("".to_string(), "".to_string())
-    // (input_path, output_path)
+    input_data
 }
