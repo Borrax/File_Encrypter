@@ -3,7 +3,7 @@ use std::env;
 use std::fs::{write, read, File, OpenOptions};
 use std::io::{Read, Write, BufReader, BufWriter};
 
-struct UserInputData {
+pub struct UserInputData {
     input_path: Option<String>,
     output_path: String,
     key: Option<String>,
@@ -468,7 +468,7 @@ pub fn read_terminal() -> UserInputData {
     }
 
     if input_data.input_path.is_none() {
-        panic!("Missing input path");
+        panic!("Missing input path!");
     }
 
 
