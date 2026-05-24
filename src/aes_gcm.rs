@@ -3,12 +3,22 @@ use std::env;
 use std::fs::{write, read, File, OpenOptions};
 use std::io::{Read, Write, BufReader, BufWriter};
 
-#[derive(Default)]
-struct UserInput {
-    input_path: String,
+struct UserInputData {
+    input_path: Option<String>,
     output_path: String,
-    key: String,
+    key: Option<String>,
     should_encrypt: bool,
+}
+
+impl Default for UserInputData {
+    fn default() -> Self {
+        Self {
+            output_path: env::current_dir().unwrap().display().to_string(),
+            input_path: None,
+            key: None,
+            should_encrypt: true
+        }
+    }
 }
 /// Look up table AES used to replace bytes
 ///
@@ -439,7 +449,7 @@ fn print_usage() {
 /// is used
 pub fn read_terminal() -> (String, String) {
     let args: Vec<String> = env::args().collect();
-    let mut output_path: String = env::current_dir().unwrap().display().to_string();
+    let mut output_path: String = 
     let mut input_path = None;
     let mut should_encrypt = false;
     let mut key = None;
