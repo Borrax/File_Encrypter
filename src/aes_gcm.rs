@@ -463,6 +463,11 @@ pub fn read_terminal() -> UserInputData {
         }
     }
 
+    input_data
+}
+
+
+pub fn run_application(input_data: &UserInputData) {
     if input_data.key.is_none() {
         panic!("Missing encryption key!");
     }
@@ -470,11 +475,4 @@ pub fn read_terminal() -> UserInputData {
     if input_data.input_path.is_none() {
         panic!("Missing input path!");
     }
-
-
-    input_data
-}
-
-
-pub fn run_application(input_data: &UserInputData) {
 }
