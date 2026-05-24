@@ -6,7 +6,7 @@ use std::io::{Read, Write, BufReader, BufWriter};
 pub struct UserInputData {
     input_path: Option<String>,
     output_path: String,
-    key: Option<String>,
+    key: Option<[u8; 32]>,
     should_encrypt: bool,
 }
 
@@ -475,4 +475,16 @@ pub fn run_application(input_data: &UserInputData) {
     if input_data.input_path.is_none() {
         panic!("Missing input path!");
     }
+
+    let aad = b"my_checksum";
+    let input_path = input_data.input_path.unwrap();
+    let output_path = input_data.output_path;
+    let key = input_data.key.unwrap();
+
+    if input_data.should_encrypt {
+        let nonce = generate_nonce();
+        encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+    }
+
+    decrypt_file(&input_path, &output_path, &key, aad);
 }
