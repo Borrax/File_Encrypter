@@ -457,7 +457,9 @@ pub fn read_terminal() -> UserInputData {
             "-i" => { input_data.input_path = Some(args[i + 1].clone()); i += 2; }
             "-o" => { input_data.output_path = args[i + 1].clone(); i += 2; }
             "-e" => { input_data.should_encrypt = true; i += 1; }
-            "-k" => { input_data.key = Some(args[i + 1].clone()); i += 2; }
+            "-k" => { 
+                input_data.key = Some(args[i + 1].as_bytes().try_into().expect("Incorrect key format!"));
+                    i += 2; }
             "-h" => { print_usage(); std::process::exit(0); }
             _ => { print_usage(); std::process::exit(1); }
         }
@@ -477,7 +479,7 @@ pub fn run_application(input_data: &UserInputData) {
     }
 
     let aad = b"my_checksum";
-    let input_path = input_data.input_path.take().unwrap();
+    let input_path = input_data.input_path.clone().unwrap();
     let output_path = input_data.output_path.clone();
     let key = input_data.key.unwrap();
 
