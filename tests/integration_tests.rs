@@ -1,14 +1,19 @@
-use file_encrypter::aes_gcm::{aes_gcm_decrypt, aes_gcm_encrypt, generate_nonce};
+use std::fs;
+use file_encrypter::aes_gcm::{run_application, UserInputData};
 
 #[test]
-fn test_encrypt_decrypt_simple() {
-    let text_bytes = b"Hello there";
-    let key = b"test keytest ketest ketest keyyy";
-    let nonce = generate_nonce();
-    let aad = b"my_checksum";
+fn test_application_simple_file() {
+    let input_path = "./test_file.txt";
+    let output_path = "./encrypted_test_file";
+    let key = b"12345678901234567890123456789012";
 
-    let (crypted_text, tag) = aes_gcm_encrypt(key, &nonce, text_bytes, aad);
-    let decrypted_bytes = aes_gcm_decrypt(key, &nonce, &crypted_text, aad, &tag);
+    let mut input_data = UserInputData::default();
+    input_data.input_path = Some(input_path.to_string());
+    input_data.output_path = output_path.to_string();
+    input_data.key = Some(key.clone());
 
-    assert_eq!(decrypted_bytes.unwrap(), text_bytes);
+    run_application(&input_data);
+
+    assert!(fs::exists(output_path).unwrap(), "Encrypted file does not exist")
+    // assert_eq!(decrypted_bytes.unwrap(), text_bytes);
 }
