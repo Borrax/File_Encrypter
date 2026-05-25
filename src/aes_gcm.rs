@@ -477,14 +477,14 @@ pub fn run_application(input_data: &UserInputData) {
     }
 
     let aad = b"my_checksum";
-    let input_path = input_data.input_path.unwrap();
-    let output_path = input_data.output_path;
+    let input_path = input_data.input_path.take().unwrap();
+    let output_path = input_data.output_path.clone();
     let key = input_data.key.unwrap();
 
     if input_data.should_encrypt {
         let nonce = generate_nonce();
         encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+    } else {
+        decrypt_file(&input_path, &output_path, &key, aad);
     }
-
-    decrypt_file(&input_path, &output_path, &key, aad);
 }
