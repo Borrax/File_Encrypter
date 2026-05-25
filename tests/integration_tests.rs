@@ -3,8 +3,13 @@ use file_encrypter::aes_gcm::{run_application, UserInputData};
 
 #[test]
 fn test_application_simple_file() {
-    let input_path = "./test_file.txt";
-    let output_path = "./encrypted_test_file";
+    let input_path = "./tests/test_file.txt";
+    let output_path = "./tests/encrypted_test_file";
+
+    if fs::exists(output_path).unwrap() {
+        fs::remove_file(output_path).unwrap();
+    }
+
     let key = b"12345678901234567890123456789012";
 
     let mut input_data = UserInputData::default();
@@ -15,5 +20,4 @@ fn test_application_simple_file() {
     run_application(&input_data);
 
     assert!(fs::exists(output_path).unwrap(), "Encrypted file does not exist")
-    // assert_eq!(decrypted_bytes.unwrap(), text_bytes);
 }

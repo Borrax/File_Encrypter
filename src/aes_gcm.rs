@@ -485,8 +485,8 @@ pub fn run_application(input_data: &UserInputData) {
 
     if input_data.should_encrypt {
         let nonce = generate_nonce();
-        encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+        let _ = encrypt_file(&input_path, &output_path, &key, &nonce, aad);
     } else {
-        decrypt_file(&input_path, &output_path, &key, aad);
+        let _ = decrypt_file(&input_path, &output_path, &key, aad);
     }
 }

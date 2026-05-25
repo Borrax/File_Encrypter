@@ -26,3 +26,5 @@ target
 /target
 
 *.vim
+
+tests/*test_file
