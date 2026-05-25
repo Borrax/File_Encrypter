@@ -4,10 +4,10 @@ use std::fs::{write, read, File, OpenOptions};
 use std::io::{Read, Write, BufReader, BufWriter};
 
 pub struct UserInputData {
-    input_path: Option<String>,
-    output_path: String,
-    key: Option<[u8; 32]>,
-    should_encrypt: bool,
+    pub input_path: Option<String>,
+    pub output_path: String,
+    pub key: Option<[u8; 32]>,
+    pub should_encrypt: bool,
 }
 
 impl Default for UserInputData {
