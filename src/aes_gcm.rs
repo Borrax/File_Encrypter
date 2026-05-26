@@ -496,20 +496,22 @@ pub fn run_application(input_data: &UserInputData) {
 }
 
 #[cfg(test)]
-mod tests {
+mod unit_tests {
     use super::*;
     use std::io::Cursor;
 
     #[test]
     fn test_read_terminal_default() {
         let input_path = "./input_path";
-        let key = b"12345678901234567890123456789012";
+        let key = "12345678901234567890123456789012";
         
-        let input = format!("-i {input_path} -k {key}");
-        let reader = Cursor::new(input);
+        let input = format!("target -i {input_path} -k {key}");
+        let reader = Cursor::new(input.clone());
 
         let input_data = read_terminal(reader);
 
-        assert_eq!(input_data.input_path.unwrap(), input);
+        assert_eq!(input_data.input_path.unwrap(), input_path);
+        assert_eq!(input_data.key.unwrap(), key.as_bytes());
+        assert_eq!(input_data.should_encrypt, true);
     }
 }
