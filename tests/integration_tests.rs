@@ -33,4 +33,10 @@ fn test_application_simple_file() {
     run_application(&input_data);
 
     assert!(fs::exists(output_path_dec).unwrap(), "Decrypted file does not exist");
+
+    let decrypted_file = fs::read(output_path_dec).unwrap();
+    let original_file = fs::read(input_path).unwrap();
+
+    assert_eq!(decrypted_file, original_file, "Decrypted and original file are not equal");
+
 }
