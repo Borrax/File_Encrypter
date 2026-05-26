@@ -494,3 +494,22 @@ pub fn run_application(input_data: &UserInputData) {
         let _ = decrypt_file(&input_path, &output_path, &key, aad);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_read_terminal_default() {
+        let input_path = "./input_path";
+        let key = b"12345678901234567890123456789012";
+        
+        let input = format!("-i {input_path} -k {key}");
+        let reader = Cursor::new(input);
+
+        let input_data = read_terminal(reader);
+
+        assert_eq!(input_data.input_path.unwrap(), input);
+    }
+}
