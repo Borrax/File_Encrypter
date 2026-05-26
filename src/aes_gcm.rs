@@ -450,14 +450,16 @@ fn print_usage() {
 pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
     let mut input_data = UserInputData::default();
     let mut input_buf = String::new();
+
     reader.read_line(&mut input_buf).unwrap();
-    let args: Vec<String> = env::args().collect();
+
+    let args: Vec<&str> = input_buf.split_whitespace().collect();
 
     let mut i = 1;
     while i < args.len() {
-        match args[i].as_str() {
-            "-i" => { input_data.input_path = Some(args[i + 1].clone()); i += 2; }
-            "-o" => { input_data.output_path = args[i + 1].clone(); i += 2; }
+        match args[i] {
+            "-i" => { input_data.input_path = Some(args[i + 1].to_string()); i += 2; }
+            "-o" => { input_data.output_path = args[i + 1].to_string(); i += 2; }
             "-e" => { input_data.should_encrypt = true; i += 1; }
             "-k" => { 
                 input_data.key = Some(args[i + 1].as_bytes().try_into().expect("Incorrect key format!"));
