@@ -1,7 +1,7 @@
 use rand::{rng, Rng};
 use std::env;
-use std::fs::{write, read, File, OpenOptions};
-use std::io::{Read, Write, BufReader, BufWriter};
+use std::fs::{write, read};
+use std::io::{BufRead};
 
 pub struct UserInputData {
     pub input_path: Option<String>,
@@ -447,8 +447,10 @@ fn print_usage() {
 ///
 /// If output path is not provided the location where the program is started from
 /// is used
-pub fn read_terminal() -> UserInputData {
+pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
     let mut input_data = UserInputData::default();
+    let mut input_buf = String::new();
+    reader.read_line(&mut input_buf).unwrap();
     let args: Vec<String> = env::args().collect();
 
     let mut i = 1;
