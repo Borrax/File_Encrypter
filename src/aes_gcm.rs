@@ -512,8 +512,7 @@ mod unit_tests {
 
     #[test]
     fn test_read_terminal_default() {
-        let input_path = "./input_path";
-        let output_path = "./output_path";
+        let input_path = "./input_path/file.exe";
         let key = "12345678901234567890123456789012";
         
         let input = format!("target -i {input_path} -k {key}");
@@ -521,6 +520,7 @@ mod unit_tests {
 
         let input_data = read_terminal(reader);
 
+        println!("{}", input_data.output_path.unwrap());
         assert_eq!(input_data.input_path.unwrap(), input_path);
         assert_eq!(input_data.key.unwrap(), key.as_bytes());
         assert_eq!(input_data.should_encrypt, true);

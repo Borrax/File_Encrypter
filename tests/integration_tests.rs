@@ -19,7 +19,7 @@ fn test_application_simple_file() {
 
     let mut input_data = UserInputData::default();
     input_data.input_path = Some(input_path.to_string());
-    input_data.output_path = output_path_enc.to_string();
+    input_data.output_path = Some(output_path_enc.to_string());
     input_data.key = Some(key.clone());
 
     run_application(&input_data);
@@ -27,7 +27,7 @@ fn test_application_simple_file() {
     assert!(fs::exists(output_path_enc).unwrap(), "Encrypted file does not exist");
 
     input_data.input_path = Some(output_path_enc.to_string());
-    input_data.output_path = output_path_dec.to_string();
+    input_data.output_path = Some(output_path_dec.to_string());
     input_data.should_encrypt = false;
 
     run_application(&input_data);
