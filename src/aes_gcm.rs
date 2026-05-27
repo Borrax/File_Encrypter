@@ -476,7 +476,7 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
         let filename = Path::new(&input_path)
             .file_name().unwrap().to_str().unwrap();
 
-        input_data.output_path = Some(format!("{}{}", current_dir_path, filename));
+        input_data.output_path = Some(format!("{}/{}", current_dir_path, filename));
     }
 
     input_data
