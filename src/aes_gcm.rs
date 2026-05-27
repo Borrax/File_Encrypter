@@ -1,4 +1,5 @@
 use rand::{rng, Rng};
+use std::path::Path;
 use std::env;
 use std::fs::{write, read};
 use std::io::{BufRead};
@@ -469,7 +470,14 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
         }
     }
 
-    let output_path = env::current_dir().unwrap().display().to_string();
+    if input_data.output_path.is_none() && !input_data.input_path.is_none() {
+        let current_dir_path = env::current_dir().unwrap().display().to_string();
+        let input_path = input_data.input_path.clone().unwrap();
+        let filename = Path::new(&input_path)
+            .file_name().unwrap().to_str().unwrap();
+
+        input_data.output_path = Some(format!("{}{}", current_dir_path, filename));
+    }
 
     input_data
 }
