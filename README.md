@@ -15,6 +15,10 @@ Run integration tests:
 ```bash
 cargo test --test integration_tests
 ```
+Run unit tests:
+```bash
+cargo test --lib aes_gcm::unit_tests::
+```
 
 ### Viewing documentation
 ```bash
