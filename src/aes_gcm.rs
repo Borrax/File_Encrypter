@@ -5,7 +5,7 @@ use std::io::{BufRead};
 
 pub struct UserInputData {
     pub input_path: Option<String>,
-    pub output_path: String,
+    pub output_path: Option<String>,
     pub key: Option<[u8; 32]>,
     pub should_encrypt: bool,
 }
@@ -13,7 +13,7 @@ pub struct UserInputData {
 impl Default for UserInputData {
     fn default() -> Self {
         Self {
-            output_path: env::current_dir().unwrap().display().to_string(),
+            output_path: None,
             input_path: None,
             key: None,
             should_encrypt: true
@@ -459,7 +459,7 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
     while i < args.len() {
         match args[i] {
             "-i" => { input_data.input_path = Some(args[i + 1].to_string()); i += 2; }
-            "-o" => { input_data.output_path = args[i + 1].to_string(); i += 2; }
+            "-o" => { input_data.output_path = Some(args[i + 1].to_string()); i += 2; }
             "-e" => { input_data.should_encrypt = true; i += 1; }
             "-k" => { 
                 input_data.key = Some(args[i + 1].as_bytes().try_into().expect("Incorrect key format!"));
@@ -468,6 +468,8 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
             _ => { print_usage(); std::process::exit(1); }
         }
     }
+
+    let output_path = env::current_dir().unwrap().display().to_string();
 
     input_data
 }
@@ -484,7 +486,7 @@ pub fn run_application(input_data: &UserInputData) {
 
     let aad = b"my_checksum";
     let input_path = input_data.input_path.clone().unwrap();
-    let output_path = input_data.output_path.clone();
+    let output_path = input_data.output_path.clone().unwrap();
     let key = input_data.key.unwrap();
 
     if input_data.should_encrypt {
@@ -503,6 +505,7 @@ mod unit_tests {
     #[test]
     fn test_read_terminal_default() {
         let input_path = "./input_path";
+        let output_path = "./output_path";
         let key = "12345678901234567890123456789012";
         
         let input = format!("target -i {input_path} -k {key}");
