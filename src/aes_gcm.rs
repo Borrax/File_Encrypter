@@ -441,15 +441,17 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     let mut writer = BufWriter::new(File::create(output_path)?);
 
     let mut idx: u32 = 0;
-    let mut tmp = vec![0u8; LARGE_FILE_CHUNK_SIZE];
+    let mut tmp_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
 
     loop {
-        let read_data = reader.read(&mut tmp);
-        if read_data == 0 {
+        let read_bytes = reader.read(&mut tmp_buf)?;
+        if read_bytes == 0 {
             break;
         }
 
-        let mut curr_nonce = generate_nonce();
+        let read_data = &tmp_buf[..read_bytes];
+
+        let mut curr_nonce = *nonce;
 
         let counter = idx.to_le_bytes();
         curr_nonce[8] ^= counter[0];
@@ -461,7 +463,7 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
 
         writer.write_all(&curr_nonce)?;
         writer.write_all(&encrypted_data)?;
-        writer.write_all(&tag);
+        writer.write_all(&tag)?;
 
         idx += 1;
     }
