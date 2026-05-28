@@ -1,8 +1,8 @@
 use rand::{rng, Rng};
 use std::path::Path;
 use std::env;
-use std::fs::{write, read};
-use std::io::{BufRead};
+use std::fs::{write, read, File};
+use std::io::{BufRead, BufReader, BufWriter, Write, Read};
 
 pub struct UserInputData {
     pub input_path: Option<String>,
@@ -21,6 +21,9 @@ impl Default for UserInputData {
         }
     }
 }
+
+const LARGE_FILE_CHUNK_SIZE: usize = 64 * 1024; // 64 kb
+
 /// Look up table AES used to replace bytes
 ///
 /// See also [`replace_bytes`]
@@ -431,6 +434,39 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 
     Ok(())
 }
+
+pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> std::io::Result<()> {
+    let input = File::open(input_path)?;
+    let mut reader = BufReader::with_capacity(LARGE_FILE_CHUNK_SIZE, input);
+    let mut writer = BufWriter::new(File::create(output_path)?);
+
+    let mut idx: u32 = 0;
+    let mut tmp = vec![0u8; LARGE_FILE_CHUNK_SIZE];
+
+    loop {
+        let read_data = reader.read(&mut tmp);
+        if read_data == 0 {
+            break;
+        }
+
+        let mut curr_nonce = generate_nonce();
+
+        let counter = idx.to_le_bytes();
+        curr_nonce[8] ^= counter[0];
+        curr_nonce[9] ^= counter[1];
+        curr_nonce[10] ^= counter[2];
+        curr_nonce[11] ^= counter[3];
+
+        let encrypted_data = aes_gcm_encrypt(key, &curr_nonce, read_data, aad);
+
+        writer.write_all(&encrypted_data)?;
+
+        idx += 1;
+    }
+
+    Ok(())
+}
+
 
 
 /// Prints basic usage of the CLI tool
