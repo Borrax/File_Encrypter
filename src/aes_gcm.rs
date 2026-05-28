@@ -457,9 +457,11 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         curr_nonce[10] ^= counter[2];
         curr_nonce[11] ^= counter[3];
 
-        let encrypted_data = aes_gcm_encrypt(key, &curr_nonce, read_data, aad);
+        let (encrypted_data, tag) = aes_gcm_encrypt(key, &curr_nonce, read_data, aad);
 
+        writer.write_all(&curr_nonce)?;
         writer.write_all(&encrypted_data)?;
+        writer.write_all(&tag);
 
         idx += 1;
     }
