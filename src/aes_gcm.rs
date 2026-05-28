@@ -484,7 +484,38 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     Ok(())
 }
 
+pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
+    let input = File::open(input_path)?;
+    let mut reader = BufReader::new(input);
+    let mut writer = BufWriter::new(File::create(output_path)?);
 
+    let mut nonce_buf = [0u8; 12];
+    let mut data_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
+    let mut tag_buf = [0u8; 16];
+
+    loop {
+        // Reading the nonce or breaking if not enough data
+        match reader.read_exact(&mut nonce_buf) {
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
+            Err(e) => return Err(e)
+        }
+
+        let num_read_bytes = reader.read(&mut data_buf)?;
+        if num_read_bytes == 0 {
+            break;
+        }
+
+        let num_tag_bytes = reader.read(&mut tag_buf)?;
+        if num_tag_bytes == 0 {
+            break;
+        }
+
+        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf)
+    }
+
+    Ok(())
+}
 
 /// Prints basic usage of the CLI tool
 fn print_usage() {
