@@ -511,7 +511,9 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
             break;
         }
 
-        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf)
+        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf).unwrap();
+
+        writer.write_all(&decrypted_data)?;
     }
 
     Ok(())
