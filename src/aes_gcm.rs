@@ -456,9 +456,7 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
 
     loop {
         let read_bytes = reader.read(&mut tmp_buf)?;
-        if read_bytes == 0 {
-            break;
-        }
+        if read_bytes == 0 { break; }
 
         let read_data = &tmp_buf[..read_bytes];
 
@@ -484,6 +482,16 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     Ok(())
 }
 
+/// Encrypts large files by breaking it into chunks and encrypting each
+/// individual chunk at a time.
+///
+/// # Arguments:
+/// * `input path`: The path to the file to be encrypted
+/// * `output path`: Where the output encrypted file to be generated
+/// * `key`: Raw encryption key
+/// * `aad`: The additional authentication data to encrypt the file with
+///
+/// See also [`encrypt_large_file`]
 pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
     let input = File::open(input_path)?;
     let mut reader = BufReader::new(input);
@@ -502,14 +510,10 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
         }
 
         let num_read_bytes = reader.read(&mut data_buf)?;
-        if num_read_bytes == 0 {
-            break;
-        }
+        if num_read_bytes == 0 { break; }
 
         let num_tag_bytes = reader.read(&mut tag_buf)?;
-        if num_tag_bytes == 0 {
-            break;
-        }
+        if num_tag_bytes == 0 { break; }
 
         let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf).unwrap();
 
