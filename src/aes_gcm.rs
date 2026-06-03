@@ -462,7 +462,7 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
 
         let read_data = &tmp_buf[..read_bytes];
 
-        let mut curr_nonce = *nonce;
+        // let mut curr_nonce = *nonce;
         // let counter = idx.to_le_bytes();
         // Add last 4 bytes of the nonce with first four of the counter
         // // in Galois Field
@@ -471,14 +471,14 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         // curr_nonce[10] ^= counter[2];
         // curr_nonce[11] ^= counter[3];
 
-        let (encrypted_data, tag) = aes_gcm_encrypt(key, &curr_nonce, read_data, aad);
+        let (encrypted_data, tag) = aes_gcm_encrypt(key, nonce, read_data, aad);
 
         // Write the nonce and tag together with the encrypted chunk
-        writer.write_all(&curr_nonce)?;
+        writer.write_all(nonce)?;
         writer.write_all(&encrypted_data)?;
         writer.write_all(&tag)?;
 
-        println!("Enc nonce {:?}", curr_nonce);
+        println!("Enc nonce {:?}", nonce);
         println!("Tag {:?}", tag);
         println!("========================");
 
@@ -518,10 +518,12 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
         let num_read_bytes = reader.read(&mut data_buf)?;
         if num_read_bytes == 0 { break; }
 
+        let read_data = &data_buf[..num_read_bytes];
+
         let num_tag_bytes = reader.read(&mut tag_buf)?;
         if num_tag_bytes == 0 { break; }
 
-        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf).unwrap();
+        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, read_data, aad, &tag_buf).unwrap();
 
         writer.write_all(&decrypted_data)?;
     }
@@ -566,7 +568,7 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
         }
     }
 
-    if input_data.output_path.is_none() && !input_data.input_path.is_none() {
+    if input_data.output_path.is_none() && input_data.input_path.is_some() {
         let current_dir_path = env::current_dir().unwrap().display().to_string();
         let input_path = input_data.input_path.clone().unwrap();
         let filename = Path::new(&input_path)
@@ -609,7 +611,6 @@ pub fn run_application(input_data: &UserInputData) {
         }
     } else {
         if size > LARGE_FILE_SIZE_THRESH as u64 {
-
             let _ = decrypt_large_file(&input_path, &output_path, &key, aad);
         } else {
             let _ = decrypt_file(&input_path, &output_path, &key, aad);
