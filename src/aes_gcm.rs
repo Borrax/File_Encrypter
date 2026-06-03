@@ -1,7 +1,7 @@
 use rand::{rng, Rng};
 use std::path::Path;
 use std::env;
-use std::fs::{write, read, File};
+use std::fs::{write, read, File, metadata};
 use std::io::{BufRead, BufReader, BufWriter, Write, Read};
 
 pub struct UserInputData {
@@ -23,6 +23,7 @@ impl Default for UserInputData {
 }
 
 const LARGE_FILE_CHUNK_SIZE: usize = 64 * 1024; // 64 kb
+const LARGE_FILE_SIZE_THRESH: usize = 64 * LARGE_FILE_CHUNK_SIZE;
 
 /// Look up table AES used to replace bytes
 ///
@@ -582,6 +583,13 @@ pub fn run_application(input_data: &UserInputData) {
         panic!("Missing input path!");
     }
 
+    let input_file_meta = metadata(input_data.input_path.unwrap());
+
+    let size = match input_file_meta {
+        Ok(file_meta) => file_meta.len(),
+        Err(_) => panic!("Error obtaining the metadata of the file. Does the file exist?")
+    };
+
     let aad = b"my_checksum";
     let input_path = input_data.input_path.clone().unwrap();
     let output_path = input_data.output_path.clone().unwrap();
@@ -589,9 +597,18 @@ pub fn run_application(input_data: &UserInputData) {
 
     if input_data.should_encrypt {
         let nonce = generate_nonce();
-        let _ = encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+        if size > LARGE_FILE_SIZE_THRESH as u64 {
+            let _ = encrypt_large_file(&input_path, &output_path, &key, &nonce, aad);
+        } else {
+            let _ = encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+        }
     } else {
-        let _ = decrypt_file(&input_path, &output_path, &key, aad);
+        if size > LARGE_FILE_SIZE_THRESH as u64 {
+
+            let _ = decrypt_large_file(&input_path, &output_path, &key, aad);
+        } else {
+            let _ = decrypt_file(&input_path, &output_path, &key, aad);
+        }
     }
 }
 
