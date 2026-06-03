@@ -27,4 +27,4 @@ target
 
 *.vim
 
-tests/*test_file
+tests/*file

@@ -43,9 +43,9 @@ fn test_application_simple_file() {
 
 #[test]
 fn test_application_large_file() {
-    let input_path = "./tests/test_file.txt";
-    let output_path_enc = "./tests/encrypted_test_file";
-    let output_path_dec = "./tests/decrypted_test_file";
+    let input_path = "./tests/video_file.mp4";
+    let output_path_enc = "./tests/encrypted_large_file";
+    let output_path_dec = "./tests/decrypted_large_file";
 
     if fs::exists(output_path_enc).unwrap() {
         fs::remove_file(output_path_enc).unwrap();
