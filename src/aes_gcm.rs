@@ -451,8 +451,6 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     let mut reader = BufReader::with_capacity(LARGE_FILE_CHUNK_SIZE, input);
     let mut writer = BufWriter::new(File::create(output_path)?);
 
-    // Will be used together with the nonce for each chunk
-    // let mut idx: u32 = 0;
     // Buffer of chunk size to be filled with read bytes
     let mut tmp_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
 
@@ -461,15 +459,6 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         if read_bytes == 0 { break; }
 
         let read_data = &tmp_buf[..read_bytes];
-
-        // let mut curr_nonce = *nonce;
-        // let counter = idx.to_le_bytes();
-        // Add last 4 bytes of the nonce with first four of the counter
-        // // in Galois Field
-        // curr_nonce[8]  ^= counter[0];
-        // curr_nonce[9]  ^= counter[1];
-        // curr_nonce[10] ^= counter[2];
-        // curr_nonce[11] ^= counter[3];
 
         let (encrypted_data, tag) = aes_gcm_encrypt(key, nonce, read_data, aad);
 
@@ -481,8 +470,6 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         println!("Enc nonce {:?}", nonce);
         println!("Tag {:?}", tag);
         println!("========================");
-
-        // idx += 1;
     }
 
     Ok(())
@@ -515,15 +502,11 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
             Err(e) => return Err(e)
         }
 
-        let num_read_bytes = reader.read(&mut data_buf)?;
-        if num_read_bytes == 0 { break; }
+        reader.read_exact(&mut data_buf)?;
 
-        let read_data = &data_buf[..num_read_bytes];
+        reader.read_exact(&mut tag_buf)?;
 
-        let num_tag_bytes = reader.read(&mut tag_buf)?;
-        if num_tag_bytes == 0 { break; }
-
-        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, read_data, aad, &tag_buf).unwrap();
+        let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf).unwrap();
 
         writer.write_all(&decrypted_data)?;
     }
