@@ -583,7 +583,7 @@ pub fn run_application(input_data: &UserInputData) {
         panic!("Missing input path!");
     }
 
-    let input_file_meta = metadata(input_data.input_path.unwrap());
+    let input_file_meta = metadata(input_data.input_path.clone().unwrap());
 
     let size = match input_file_meta {
         Ok(file_meta) => file_meta.len(),
