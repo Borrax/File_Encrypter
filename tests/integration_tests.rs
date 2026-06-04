@@ -90,12 +90,6 @@ fn test_application_large_file() {
 
         let _ = orig_reader.read_exact(&mut orig_data_buf);
 
-        assert_eq!(dec_data_buf, orig_data_buf);
+        assert_eq!(dec_data_buf, orig_data_buf, "Decrypted and original data are not equal!");
     }
-        
-
-    // let decrypted_file = fs::read(output_path_dec).unwrap();
-    // let original_file = fs::read(input_path).unwrap();
-
-    // assert_eq!(decrypted_file, original_file, "Decrypted and original file are not equal");
 }
