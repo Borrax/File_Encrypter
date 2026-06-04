@@ -615,7 +615,7 @@ mod unit_tests {
 
         assert_eq!(input_data.input_path.unwrap(), input_path);
         assert_eq!(input_data.key.unwrap(), key.as_bytes());
-        assert_eq!(input_data.should_encrypt, true);
+        assert!(input_data.should_encrypt);
         assert_eq!(input_data.output_path.unwrap(), expected_output_path);
     }
 }

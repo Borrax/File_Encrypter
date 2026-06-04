@@ -1,5 +1,5 @@
 use std::{fs, io::{BufReader, Read}};
-use file_encrypter::aes_gcm::{run_application, UserInputData, encrypt_large_file};
+use file_encrypter::aes_gcm::{run_application, UserInputData};
 
 #[test]
 fn test_application_simple_file() {
@@ -20,7 +20,7 @@ fn test_application_simple_file() {
     let mut input_data = UserInputData::default();
     input_data.input_path = Some(input_path.to_string());
     input_data.output_path = Some(output_path_enc.to_string());
-    input_data.key = Some(key.clone());
+    input_data.key = Some(*key);
 
     run_application(&input_data);
 
@@ -60,7 +60,7 @@ fn test_application_large_file() {
     let mut input_data = UserInputData::default();
     input_data.input_path = Some(input_path.to_string());
     input_data.output_path = Some(output_path_enc.to_string());
-    input_data.key = Some(key.clone());
+    input_data.key = Some(*key);
 
     run_application(&input_data);
 
@@ -76,8 +76,8 @@ fn test_application_large_file() {
 
     let input_file_handle = fs::File::open(input_path).unwrap();
     let output_file_handle = fs::File::open(output_path_dec).unwrap();
-    let mut dec_reader = std::io::BufReader::new(output_file_handle);
-    let mut orig_reader = std::io::BufReader::new(input_file_handle);
+    let mut dec_reader = BufReader::new(output_file_handle);
+    let mut orig_reader = BufReader::new(input_file_handle);
     let mut dec_data_buf = [0u8; CHUNK_SIZE];
     let mut orig_data_buf = [0u8; CHUNK_SIZE];
 
