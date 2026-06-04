@@ -375,7 +375,6 @@ pub fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
     let tag_u128 = u128::from_be_bytes(encrypred_ctr_block) ^ tag;
     let tag_bytes = tag_u128.to_be_bytes(); // converting it back to [u8; 16]
     
-    println!("tag {:?} vs expected {:?}", tag_bytes, expected_tag);
     if tag_bytes != *expected_tag {
         return None;
     }
@@ -466,10 +465,6 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         writer.write_all(nonce)?;
         writer.write_all(&encrypted_data)?;
         writer.write_all(&tag)?;
-
-        println!("Enc nonce {:?}", nonce);
-        println!("Tag {:?}", tag);
-        println!("========================");
     }
 
     Ok(())
