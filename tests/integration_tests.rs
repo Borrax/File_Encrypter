@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, io::BufReader};
 use file_encrypter::aes_gcm::{run_application, UserInputData, encrypt_large_file};
 
 #[test]
@@ -45,6 +45,7 @@ fn test_application_large_file() {
     let input_path = "./tests/video_file.mp4";
     let output_path_enc = "./tests/encrypted_large_file";
     let output_path_dec = "./tests/decrypted_large_file";
+    const CHUNK_SIZE: usize = 64 * 1024;
 
     if fs::exists(output_path_enc).unwrap() {
         fs::remove_file(output_path_enc).unwrap();
@@ -72,7 +73,19 @@ fn test_application_large_file() {
     run_application(&input_data);
 
     assert!(fs::exists(output_path_dec).unwrap(), "Decrypted file does not exist");
-    //
+
+    let input_file_handle = fs::File::open(input_path).unwrap();
+    let output_file_handle = fs::File::open(output_path_dec).unwrap();
+    let dec_reader = std::io::BufReader::with_capacity(CHUNK_SIZE, output_file_handle);
+    let orig_reader = std::io::BufReader::with_capacity(CHUNK_SIZE, input_file_handle);
+    let mut dec_data_buf = [0u8; CHUNK_SIZE];
+    let mut orig_data_buf = [0u8; CHUNK_SIZE];
+
+    while true {
+        dec_data_buf = 
+    }
+        
+
     let decrypted_file = fs::read(output_path_dec).unwrap();
     let original_file = fs::read(input_path).unwrap();
 
