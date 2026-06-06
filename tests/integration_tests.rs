@@ -17,10 +17,12 @@ fn test_application_simple_file() {
 
     let key = b"12345678901234567890123456789012";
 
-    let mut input_data = UserInputData::default();
-    input_data.input_path = Some(input_path.to_string());
-    input_data.output_path = Some(output_path_enc.to_string());
-    input_data.key = Some(*key);
+    let mut input_data = UserInputData {
+        input_path: Some(input_path.to_string()),
+        output_path: Some(output_path_enc.to_string()),
+        key: Some(*key),
+        ..Default::default()
+    };
 
     run_application(&input_data);
 
@@ -57,10 +59,12 @@ fn test_application_large_file() {
 
     let key = b"12345678901234567890123456789012";
 
-    let mut input_data = UserInputData::default();
-    input_data.input_path = Some(input_path.to_string());
-    input_data.output_path = Some(output_path_enc.to_string());
-    input_data.key = Some(*key);
+    let mut input_data = UserInputData {
+        input_path: Some(input_path.to_string()),
+        output_path: Some(output_path_enc.to_string()),
+        key: Some(*key),
+        ..Default::default()
+    };
 
     run_application(&input_data);
 
