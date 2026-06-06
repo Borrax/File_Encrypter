@@ -113,7 +113,7 @@ fn add_round_key(state: &mut [u8; 16], key: &[u8; 16]) {
 
 
 #[allow(unused)]
-/// Displaying a byte array as a 4x4 matrix
+/// Displaying a byte array as a 4x4 matrix. It is used for manual testing
 ///
 /// Used for manual testing
 fn display_byte_array(state: &[u8; 16]) {
@@ -518,10 +518,10 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
 fn print_usage() {
     println!("\
     Usage: file_encrypter [OPTIONS]
-        -i: Input file path (mandatory)
+        -i: Input file path (mandatory).
         -o: Output file path. If not provided the current work directory would be used.
-        -e: If file should be encrypted. If not provided it would be encrypted by default.
-        -k: Encryption key (mandatory)
+        -d: If file should be decrypted instead of decrypted.
+        -k: Encryption key (mandatory).
         ");
 }
 
@@ -542,7 +542,7 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
         match args[i] {
             "-i" => { input_data.input_path = Some(args[i + 1].to_string()); i += 2; }
             "-o" => { input_data.output_path = Some(args[i + 1].to_string()); i += 2; }
-            "-e" => { input_data.should_encrypt = true; i += 1; }
+            "-d" => { input_data.should_encrypt = false; i += 1; }
             "-k" => { 
                 input_data.key = Some(args[i + 1].as_bytes().try_into().expect("Incorrect key format!"));
                     i += 2; }
@@ -614,6 +614,24 @@ mod unit_tests {
         let key = "12345678901234567890123456789012";
         
         let input = format!("target -i {input_path} -k {key}");
+        let reader = Cursor::new(input.clone());
+
+        let input_data = read_terminal(reader);
+
+        assert_eq!(input_data.input_path.unwrap(), input_path);
+        assert_eq!(input_data.key.unwrap(), key.as_bytes());
+        assert!(input_data.should_encrypt);
+        assert_eq!(input_data.output_path.unwrap(), expected_output_path);
+    }
+
+    #[test]
+    fn test_read_terminal_non_default() {
+        let input_path = "./input_path/file.exe";
+        let current_dir_path = env::current_dir().unwrap().display().to_string();
+        let expected_output_path = "./test_output_path/1234/";
+        let key = "12345678901234567890123456789012";
+        
+        let input = format!("target -i {input_path} -k {key} -");
         let reader = Cursor::new(input.clone());
 
         let input_data = read_terminal(reader);

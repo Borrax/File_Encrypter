@@ -78,17 +78,17 @@ fn test_application_large_file() {
 
     assert!(fs::exists(output_path_dec).unwrap(), "Decrypted file does not exist");
 
+    let file_size_dec = fs::metadata(output_path_dec).unwrap().len();
+    let file_size_orig = fs::metadata(input_path).unwrap().len();
+
+    assert_eq!(file_size_dec, file_size_orig);
+
     let input_file_handle = fs::File::open(input_path).unwrap();
     let output_file_handle = fs::File::open(output_path_dec).unwrap();
     let mut dec_reader = BufReader::new(output_file_handle);
     let mut orig_reader = BufReader::new(input_file_handle);
     let mut dec_data_buf = [0u8; CHUNK_SIZE];
     let mut orig_data_buf = [0u8; CHUNK_SIZE];
-    
-    let file_size_dec = fs::metadata(output_path_dec).unwrap().len();
-    let file_size_orig = fs::metadata(input_path).unwrap().len();
-
-    assert_eq!(file_size_dec, file_size_orig);
 
     loop {
         match dec_reader.read_exact(&mut dec_data_buf) {
