@@ -529,7 +529,7 @@ fn print_usage() {
 ///
 /// If output path is not provided the location where the program is started from
 /// is used
-pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
+pub fn read_terminal<R: BufRead>(mut reader: R) -> Result<UserInputData, Box<dyn std::error::Error>> {
     let mut input_data = UserInputData::default();
     let mut input_buf = String::new();
 
@@ -551,6 +551,10 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
         }
     }
 
+    if input_data.key.is_none() {
+        return Err("No enc/dec key provided".into())
+    }
+
     if input_data.output_path.is_none() && input_data.input_path.is_some() {
         let current_dir_path = env::current_dir().unwrap().display().to_string();
         let input_path = input_data.input_path.clone().unwrap();
@@ -558,9 +562,10 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> UserInputData {
             .file_name().unwrap().to_str().unwrap();
 
         input_data.output_path = Some(format!("{}/{}", current_dir_path, filename));
-    }
+        return Ok(input_data);
+    } 
 
-    input_data
+    Err("No input path provided".into())
 }
 
 
@@ -627,18 +632,29 @@ mod unit_tests {
     #[test]
     fn test_read_terminal_non_default() {
         let input_path = "./input_path/file.exe";
-        let current_dir_path = env::current_dir().unwrap().display().to_string();
         let expected_output_path = "./test_output_path/1234/";
-        let key = "12345678901234567890123456789012";
+        let key = "00000000000000000000000000000000";
         
-        let input = format!("target -i {input_path} -k {key} -");
+        let input = format!("target -i {input_path} -k {key} -o {expected_output_path} -d");
         let reader = Cursor::new(input.clone());
 
         let input_data = read_terminal(reader);
 
         assert_eq!(input_data.input_path.unwrap(), input_path);
         assert_eq!(input_data.key.unwrap(), key.as_bytes());
-        assert!(input_data.should_encrypt);
+        assert!(!input_data.should_encrypt);
         assert_eq!(input_data.output_path.unwrap(), expected_output_path);
+    }
+
+    #[test]
+    fn test_error_no_input_path() {
+        let expected_output_path = "./test_output_path/1234/";
+        let key = "00000000000000000000000000000000";
+        
+        let input = format!("target -k {key} -o {expected_output_path} -d");
+        let reader = Cursor::new(input.clone());
+
+        let input_data = read_terminal(reader);
+
     }
 }
