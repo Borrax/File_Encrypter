@@ -285,7 +285,7 @@ fn gf128_mul(mut x: u128, mut y: u128) -> u128 {
 /// # Arguments:
 /// * `hash_key`: Derived by encrypting zeros with AES and the session key
 /// * `aad`: Additional authenticated data (like packet header data to verify nobody has tempered
-/// with it)
+///   with it)
 /// * `cipher_text`: The encrypted version of the text (well a byte of it)
 fn get_authentication_tag(hash_key: u128, aad: &[u8], cipher_text: &[u8]) -> u128 {
     let mut tag = 0u128;
@@ -463,6 +463,7 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
 
         // Write the nonce and tag together with the encrypted chunk
         writer.write_all(nonce)?;
+        writer.write_all(&(read_bytes as u32).to_le_bytes())?;
         writer.write_all(&encrypted_data)?;
         writer.write_all(&tag)?;
     }
@@ -486,8 +487,8 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
     let mut writer = BufWriter::new(File::create(output_path)?);
 
     let mut nonce_buf = [0u8; 12];
-    let mut data_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
     let mut tag_buf = [0u8; 16];
+    let mut chunk_len_buf = [0u8; 4];
 
     loop {
         // Reading the nonce or breaking if not enough data
@@ -497,6 +498,10 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
             Err(e) => return Err(e)
         }
 
+        reader.read_exact(&mut chunk_len_buf)?;
+        let chunk_len = u32::from_le_bytes(chunk_len_buf) as usize;
+
+        let mut data_buf = vec![0u8; chunk_len];
         reader.read_exact(&mut data_buf)?;
 
         reader.read_exact(&mut tag_buf)?;
