@@ -650,11 +650,23 @@ mod unit_tests {
     }
 
     #[test]
-    fn test_error_no_input_path() {
+    fn test_read_terminal_error_no_input_path() {
         let expected_output_path = "./test_output_path/1234/";
         let key = "00000000000000000000000000000000";
         
         let input = format!("target -k {key} -o {expected_output_path} -d");
+        let reader = Cursor::new(input.clone());
+
+        let input_data = read_terminal(reader);
+        assert!(input_data.is_err());
+    }
+
+    #[test]
+    fn test_read_terminal_error_no_key() {
+        let input_path = "./input_path/file.exe";
+        let expected_output_path = "./test_output_path/1234/";
+        
+        let input = format!("target -i {input_path} -o {expected_output_path} -d");
         let reader = Cursor::new(input.clone());
 
         let input_data = read_terminal(reader);
