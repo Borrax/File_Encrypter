@@ -621,7 +621,7 @@ mod unit_tests {
         let input = format!("target -i {input_path} -k {key}");
         let reader = Cursor::new(input.clone());
 
-        let input_data = read_terminal(reader);
+        let input_data = read_terminal(reader).unwrap();
 
         assert_eq!(input_data.input_path.unwrap(), input_path);
         assert_eq!(input_data.key.unwrap(), key.as_bytes());
@@ -638,7 +638,7 @@ mod unit_tests {
         let input = format!("target -i {input_path} -k {key} -o {expected_output_path} -d");
         let reader = Cursor::new(input.clone());
 
-        let input_data = read_terminal(reader);
+        let input_data = read_terminal(reader).unwrap();
 
         assert_eq!(input_data.input_path.unwrap(), input_path);
         assert_eq!(input_data.key.unwrap(), key.as_bytes());
