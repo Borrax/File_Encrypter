@@ -655,6 +655,6 @@ mod unit_tests {
         let reader = Cursor::new(input.clone());
 
         let input_data = read_terminal(reader);
-
+        assert!(input_data.is_err());
     }
 }
