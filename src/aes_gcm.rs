@@ -552,20 +552,23 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> Result<UserInputData, Box<dyn
     }
 
     if input_data.key.is_none() {
-        return Err("No enc/dec key provided".into())
+        return Err("No enc/dec key provided".into());
+    }
+    
+    if input_data.input_path.is_none() {
+        return Err("No input path provided".into());
     }
 
-    if input_data.output_path.is_none() && input_data.input_path.is_some() {
+    if input_data.output_path.is_none() {
         let current_dir_path = env::current_dir().unwrap().display().to_string();
         let input_path = input_data.input_path.clone().unwrap();
         let filename = Path::new(&input_path)
             .file_name().unwrap().to_str().unwrap();
 
         input_data.output_path = Some(format!("{}/{}", current_dir_path, filename));
-        return Ok(input_data);
     } 
 
-    Err("No input path provided".into())
+    Ok(input_data)
 }
 
 
