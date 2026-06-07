@@ -672,4 +672,128 @@ mod unit_tests {
         let input_data = read_terminal(reader);
         assert!(input_data.is_err());
     }
+
+    // -------Mix Columns Tests-----------
+
+    fn mix(mut state: [u8; 16]) -> [u8; 16] {
+        mix_columns(&mut state);
+        state
+    }
+
+    #[test]
+    fn test_mix_columns_fips197_round1() {
+        // Input state (column-major) from FIPS 197, §B.1
+        let input: [u8; 16] = [
+            0xd4, 0xe0, 0xb8, 0x1e,
+            0xbf, 0xb4, 0x41, 0x27,
+            0x5d, 0x52, 0x11, 0x98,
+            0x30, 0xae, 0xf1, 0xe5,
+        ];
+        let expected: [u8; 16] = [
+            0x04, 0xe0, 0x48, 0x28,
+            0x66, 0xcb, 0xf8, 0x06,
+            0x81, 0x19, 0xd3, 0x26,
+            0xe5, 0x9a, 0x7a, 0x4c,
+        ];
+        assert_eq!(mix(input), expected);
+    }
+
+    /// From FIPS 197 Appendix B, round 2 MixColumns input/output
+    #[test]
+    fn test_mix_columns_fips197_round2() {
+        let input: [u8; 16] = [
+            0x49, 0x45, 0x7f, 0x77,
+            0xde, 0xdb, 0x39, 0x02,
+            0xd2, 0x96, 0x87, 0x53,
+            0x89, 0xf1, 0x1a, 0x3b,
+        ];
+        let expected: [u8; 16] = [
+            0x58, 0x1b, 0xfb, 0x17,
+            0x40, 0x2f, 0x98, 0x45,
+            0x2a, 0xc7, 0x76, 0x9f,
+            0x17, 0x96, 0xd6, 0xb0,
+        ];
+        assert_eq!(mix(input), expected);
+    }
+
+    // --- Property-based / mathematical tests ---
+
+    /// MixColumns is linear over GF(2^8): MC(a XOR b) == MC(a) XOR MC(b)
+    #[test]
+    fn test_mix_columns_linearity() {
+        let a: [u8; 16] = [
+            0x32, 0x88, 0x31, 0xe0, 0x43, 0x5a, 0x31, 0x37,
+            0xf6, 0x30, 0x98, 0x07, 0xa8, 0x8d, 0xa2, 0x34,
+        ];
+        let b: [u8; 16] = [
+            0x2b, 0x28, 0xab, 0x09, 0x7e, 0xae, 0xf7, 0xcf,
+            0x15, 0xd2, 0x15, 0x4f, 0x16, 0xa6, 0x88, 0x3c,
+        ];
+
+        let mut xor_then_mix = std::array::from_fn(|i| a[i] ^ b[i]);
+        mix_columns(&mut xor_then_mix);
+
+        let mix_a = mix(a);
+        let mix_b = mix(b);
+        let mix_then_xor: [u8; 16] = std::array::from_fn(|i| mix_a[i] ^ mix_b[i]);
+
+        assert_eq!(xor_then_mix, mix_then_xor);
+    }
+
+    /// Applying MixColumns 4 times returns the original state
+    /// (MC has order 4 in GF(2^8))
+    #[test]
+    fn test_mix_columns_order_4() {
+        let original: [u8; 16] = [
+            0x63, 0x53, 0xe0, 0x8c, 0x09, 0x60, 0xe1, 0x04,
+            0xcd, 0x70, 0xb7, 0x51, 0xba, 0xca, 0xd0, 0xe7,
+        ];
+        let mut state = original;
+        for _ in 0..4 {
+            mix_columns(&mut state);
+        }
+        assert_eq!(state, original);
+    }
+
+    /// All-zero state must remain all-zero (MC is linear, MC(0) = 0)
+    #[test]
+    fn test_mix_columns_zero_state() {
+        assert_eq!(mix([0u8; 16]), [0u8; 16]);
+    }
+
+    /// Each column is transformed independently — mutating one column
+    /// must not affect any other column.
+    #[test]
+    fn test_mix_columns_column_independence() {
+        let base: [u8; 16] = [
+            0x01, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+        ];
+        let result = mix(base);
+
+        // Columns 1-3 were all-zero; they must remain all-zero
+        assert_eq!(&result[4..8],  &[0u8; 4]);
+        assert_eq!(&result[8..12], &[0u8; 4]);
+        assert_eq!(&result[12..], &[0u8; 4]);
+    }
+
+    /// Single non-zero byte in each column position exercises
+    /// every row of the MixColumns matrix.
+    #[test]
+    fn test_mix_columns_single_byte_diffusion() {
+        // Only b0 = 0x01 in first column → expected output from MC matrix row:
+        // [2, 1, 1, 3] * [1,0,0,0]^T = [2, 1, 1, 3]  (in GF notation)
+        let input: [u8; 16] = [
+            0x01, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+        ];
+        let result = mix(input);
+        // MC matrix column 0: output = [x2(1)^0^0^0, 1^0^0^0, 1^0^0^0, x2(1)^1^0^0]
+        //                             = [0x02, 0x01, 0x01, 0x03]
+        assert_eq!(&result[0..4], &[0x02, 0x01, 0x01, 0x03]);
+    }
 }
