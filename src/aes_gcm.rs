@@ -595,27 +595,22 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> Result<UserInputData, Box<dyn
 
 
 pub fn run_application(input_data: &UserInputData) -> Result<(), AppError> {
-    let input_file_meta = metadata(input_data.input_path.clone().unwrap());
-
-    let size = match input_file_meta {
-        Ok(file_meta) => file_meta.len(),
-        Err(_) => panic!("Error obtaining the metadata of the file. Does the file exist?")
-    };
+    let input_path = input_data.input_path.as_deref().ok_or(AppError::MissingInputPath)?;
+    let file_size = metadata(input_path).map_err(AppError::MetadataError)?.len();
 
     let aad = b"my_checksum".as_slice();
-    let input_path = input_data.input_path.as_deref().ok_or(AppError::MissingInputPath)?;
-    let output_path = input_data.output_path.clone().unwrap();
+    let output_path = input_data.output_path.as_deref().ok_or(AppError::MissingOutputPath)?;
     let key = input_data.key.unwrap();
 
     if input_data.should_encrypt {
         let nonce = generate_nonce();
-        if size > LARGE_FILE_SIZE_THRESH as u64 {
+        if file_size > LARGE_FILE_SIZE_THRESH as u64 {
             let _ = encrypt_large_file(&input_path, &output_path, &key, &nonce, aad);
         } else {
             let _ = encrypt_file(&input_path, &output_path, &key, &nonce, aad);
         }
     } else {
-        if size > LARGE_FILE_SIZE_THRESH as u64 {
+        if file_size > LARGE_FILE_SIZE_THRESH as u64 {
             let _ = decrypt_large_file(&input_path, &output_path, &key, aad);
         } else {
             let _ = decrypt_file(&input_path, &output_path, &key, aad);
