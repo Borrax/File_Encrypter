@@ -1,6 +1,7 @@
 use rand::{rng, Rng};
 use std::path::Path;
 use std::env;
+use std::fmt;
 use std::fs::{write, read, File, metadata};
 use std::io::{BufRead, BufReader, BufWriter, Write, Read};
 
@@ -21,6 +22,27 @@ impl Default for UserInputData {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum AppError {
+    MissingInputPath,
+    MissingOutputPath,
+    MissingKey,
+    MetadataError(std::io::Error),
+}
+
+impl fmt::Display for AppError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingInputPath => write!(f, "Missing input path"),
+            Self::MissingOutputPath => write!(f, "Missing output path"),
+            Self::MissingKey => write!(f, "Missing key"),
+            Self::MetadataError(err) => write!(f, "Failed to get file's metadata: {}", err)
+        }
+    }
+}
+
+impl std::error::Error for AppError {}
 
 const LARGE_FILE_CHUNK_SIZE: usize = 64 * 1024; // 64 kb
 const LARGE_FILE_SIZE_THRESH: usize = 64 * LARGE_FILE_CHUNK_SIZE;
@@ -572,7 +594,7 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> Result<UserInputData, Box<dyn
 }
 
 
-pub fn run_application(input_data: &UserInputData) {
+pub fn run_application(input_data: &UserInputData) -> Result<(), AppError> {
     let input_file_meta = metadata(input_data.input_path.clone().unwrap());
 
     let size = match input_file_meta {
@@ -581,7 +603,7 @@ pub fn run_application(input_data: &UserInputData) {
     };
 
     let aad = b"my_checksum".as_slice();
-    let input_path = input_data.input_path.clone().unwrap();
+    let input_path = input_data.input_path.as_deref().ok_or(AppError::MissingInputPath)?;
     let output_path = input_data.output_path.clone().unwrap();
     let key = input_data.key.unwrap();
 
@@ -599,6 +621,8 @@ pub fn run_application(input_data: &UserInputData) {
             let _ = decrypt_file(&input_path, &output_path, &key, aad);
         }
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
