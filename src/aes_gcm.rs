@@ -29,6 +29,8 @@ pub enum AppError {
     MissingOutputPath,
     MissingKey,
     MetadataError(std::io::Error),
+    EncryptionError(String),
+    DecryptionError(String),
 }
 
 impl fmt::Display for AppError {
@@ -37,7 +39,9 @@ impl fmt::Display for AppError {
             Self::MissingInputPath => write!(f, "Missing input path"),
             Self::MissingOutputPath => write!(f, "Missing output path"),
             Self::MissingKey => write!(f, "Missing key"),
-            Self::MetadataError(err) => write!(f, "Failed to get file's metadata: {}", err)
+            Self::MetadataError(err) => write!(f, "Failed to get file's metadata: {}", err),
+            Self::EncryptionError(msg) => write!(f, "Failed to encrypt: {}", msg),
+            Self::DecryptionError(msg) => write!(f, "Failed to decrypt: {}", msg),
         }
     }
 }
@@ -414,6 +418,7 @@ pub fn generate_nonce() -> [u8; 12] {
     result
 }
 
+//TODO: Change method name and change return type to have an error
 /// Encrypts a file using AES256-GCM algorithm
 ///
 /// # Arguments:
@@ -437,6 +442,7 @@ pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &
 }
 
 
+//TODO: Change method name and change return type to have an error
 /// Decrypts a file using AES256-GCM algorithm
 ///
 /// # Arguments:
@@ -458,6 +464,7 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
     Ok(())
 }
 
+//TODO: Change method name and change return type to have an error
 /// Encrypts large files by breaking it into chunks and encrypting each
 /// individual chunk at a time.
 ///
@@ -493,6 +500,7 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     Ok(())
 }
 
+//TODO: Change method name and change return type to have an error
 /// Encrypts large files by breaking it into chunks and encrypting each
 /// individual chunk at a time.
 ///
@@ -600,20 +608,26 @@ pub fn run_application(input_data: &UserInputData) -> Result<(), AppError> {
 
     let aad = b"my_checksum".as_slice();
     let output_path = input_data.output_path.as_deref().ok_or(AppError::MissingOutputPath)?;
-    let key = input_data.key.unwrap();
+    let key = input_data.key.ok_or(AppError::MissingKey)?;
+
+    let is_large_file = file_size > LARGE_FILE_SIZE_THRESH as u64;
 
     if input_data.should_encrypt {
         let nonce = generate_nonce();
-        if file_size > LARGE_FILE_SIZE_THRESH as u64 {
-            let _ = encrypt_large_file(&input_path, &output_path, &key, &nonce, aad);
+        if is_large_file {
+            encrypt_large_file(&input_path, &output_path, &key, &nonce, aad)
+                .map_err(|e| AppError::EncryptionError(e.to_string()))?;
         } else {
-            let _ = encrypt_file(&input_path, &output_path, &key, &nonce, aad);
+            encrypt_file(&input_path, &output_path, &key, &nonce, aad)
+                .map_err(|e| AppError::EncryptionError(e.to_string()))?;
         }
     } else {
-        if file_size > LARGE_FILE_SIZE_THRESH as u64 {
-            let _ = decrypt_large_file(&input_path, &output_path, &key, aad);
+        if is_large_file {
+            decrypt_large_file(&input_path, &output_path, &key, aad)
+                .map_err(|e| AppError::DecryptionError(e.to_string()))?;
         } else {
-            let _ = decrypt_file(&input_path, &output_path, &key, aad);
+            decrypt_file(&input_path, &output_path, &key, aad)
+                .map_err(|e| AppError::DecryptionError(e.to_string()))?;
         }
     }
 
