@@ -573,14 +573,6 @@ pub fn read_terminal<R: BufRead>(mut reader: R) -> Result<UserInputData, Box<dyn
 
 
 pub fn run_application(input_data: &UserInputData) {
-    if input_data.key.is_none() {
-        panic!("Missing encryption key!");
-    }
-
-    if input_data.input_path.is_none() {
-        panic!("Missing input path!");
-    }
-
     let input_file_meta = metadata(input_data.input_path.clone().unwrap());
 
     let size = match input_file_meta {
