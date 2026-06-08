@@ -24,7 +24,8 @@ fn test_application_simple_file() {
         ..Default::default()
     };
 
-    run_application(&input_data);
+    let app_result = run_application(&input_data);
+    assert!(app_result.is_ok());
 
     assert!(fs::exists(output_path_enc).unwrap(), "Encrypted file does not exist");
 
@@ -32,7 +33,8 @@ fn test_application_simple_file() {
     input_data.output_path = Some(output_path_dec.to_string());
     input_data.should_encrypt = false;
 
-    run_application(&input_data);
+    let app_result = run_application(&input_data);
+    assert!(app_result.is_ok());
 
     assert!(fs::exists(output_path_dec).unwrap(), "Decrypted file does not exist");
 
@@ -66,7 +68,8 @@ fn test_application_large_file() {
         ..Default::default()
     };
 
-    run_application(&input_data);
+    let app_result = run_application(&input_data);
+    assert!(app_result.is_ok());
 
     assert!(fs::exists(output_path_enc).unwrap(), "Encrypted file does not exist");
     //
@@ -74,7 +77,8 @@ fn test_application_large_file() {
     input_data.output_path = Some(output_path_dec.to_string());
     input_data.should_encrypt = false;
 
-    run_application(&input_data);
+    let app_result = run_application(&input_data);
+    assert!(app_result.is_ok());
 
     assert!(fs::exists(output_path_dec).unwrap(), "Decrypted file does not exist");
 
