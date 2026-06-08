@@ -387,7 +387,7 @@ pub fn aes_gcm_decrypt(key: &[u8; 32], nonce: &[u8; 12],
 /// See also [`aes_gcm_encrypt`] and [`aes_gcm_decrypt`]
 pub fn generate_nonce() -> [u8; 12] {
     let mut result = [0u8; 12];
-    rng().fill_bytes(&mut result);
+    rng().fill_bytes(&mut result[..]);
 
     result
 }
@@ -588,7 +588,7 @@ pub fn run_application(input_data: &UserInputData) {
         Err(_) => panic!("Error obtaining the metadata of the file. Does the file exist?")
     };
 
-    let aad = b"my_checksum";
+    let aad = b"my_checksum".as_slice();
     let input_path = input_data.input_path.clone().unwrap();
     let output_path = input_data.output_path.clone().unwrap();
     let key = input_data.key.unwrap();
