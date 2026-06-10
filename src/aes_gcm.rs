@@ -464,7 +464,6 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
     Ok(())
 }
 
-//TODO: Change method name and change return type to have an error
 /// Encrypts large files by breaking it into chunks and encrypting each
 /// individual chunk at a time.
 ///
@@ -474,16 +473,17 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 /// * `key`: Raw encryption key
 /// * `nonce`: The random generated number to be used for the encryption
 /// * `aad`: The additional authentication data to encrypt the file with
-pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> std::io::Result<()> {
-    let input = File::open(input_path)?;
+pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> Result<(), AppError> {
+    let input = File::open(input_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
     let mut reader = BufReader::with_capacity(LARGE_FILE_CHUNK_SIZE, input);
-    let mut writer = BufWriter::new(File::create(output_path)?);
+    let file = File::create(output_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
+    let mut writer = BufWriter::new(file);
 
     // Buffer of chunk size to be filled with read bytes
     let mut tmp_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
 
     loop {
-        let read_bytes = reader.read(&mut tmp_buf)?;
+        let read_bytes = reader.read(&mut tmp_buf).map_err(|e| AppError::EncryptionError(e.to_string()))?;
         if read_bytes == 0 { break; }
 
         let read_data = &tmp_buf[..read_bytes];
@@ -491,10 +491,10 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
         let (encrypted_data, tag) = aes_gcm_encrypt(key, nonce, read_data, aad);
 
         // Write the nonce and tag together with the encrypted chunk
-        writer.write_all(nonce)?;
-        writer.write_all(&(read_bytes as u32).to_le_bytes())?;
-        writer.write_all(&encrypted_data)?;
-        writer.write_all(&tag)?;
+        writer.write_all(nonce).map_err(|e| AppError::EncryptionError(e.to_string()))?;
+        writer.write_all(&(read_bytes as u32).to_le_bytes()).map_err(|e| AppError::EncryptionError(e.to_string()))?;
+        writer.write_all(&encrypted_data).map_err(|e| AppError::EncryptionError(e.to_string()))?;
+        writer.write_all(&tag).map_err(|e| AppError::EncryptionError(e.to_string()))?;
     }
 
     Ok(())
