@@ -476,8 +476,8 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> Result<(), AppError> {
     let input = File::open(input_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
     let mut reader = BufReader::with_capacity(LARGE_FILE_CHUNK_SIZE, input);
-    let file = File::create(output_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
-    let mut writer = BufWriter::new(file);
+    let output_file = File::create(output_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
+    let mut writer = BufWriter::new(output_file);
 
     // Buffer of chunk size to be filled with read bytes
     let mut tmp_buf = vec![0u8; LARGE_FILE_CHUNK_SIZE];
@@ -500,7 +500,6 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
     Ok(())
 }
 
-//TODO: Change method name and change return type to have an error
 /// Encrypts large files by breaking it into chunks and encrypting each
 /// individual chunk at a time.
 ///
@@ -511,10 +510,11 @@ pub fn encrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], no
 /// * `aad`: The additional authentication data to encrypt the file with
 ///
 /// See also [`encrypt_large_file`]
-pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
-    let input = File::open(input_path)?;
+pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> Result<(), AppError> {
+    let input = File::open(input_path).map_err(|e| AppError::DecryptionError(e.to_string()))?;
     let mut reader = BufReader::new(input);
-    let mut writer = BufWriter::new(File::create(output_path)?);
+    let output_file = File::create(output_path).map_err(|e| AppError::DecryptionError(e.to_string()))?;
+    let mut writer = BufWriter::new(output_file);
 
     let mut nonce_buf = [0u8; 12];
     let mut tag_buf = [0u8; 16];
@@ -525,20 +525,20 @@ pub fn decrypt_large_file(input_path: &str, output_path: &str, key: &[u8;32], aa
         match reader.read_exact(&mut nonce_buf) {
             Ok(_) => {}
             Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
-            Err(e) => return Err(e)
+            Err(e) => return Err(AppError::DecryptionError(e.to_string()))
         }
 
-        reader.read_exact(&mut chunk_len_buf)?;
+        reader.read_exact(&mut chunk_len_buf).map_err(|e| AppError::DecryptionError(e.to_string()))?;
         let chunk_len = u32::from_le_bytes(chunk_len_buf) as usize;
 
         let mut data_buf = vec![0u8; chunk_len];
-        reader.read_exact(&mut data_buf)?;
+        reader.read_exact(&mut data_buf).map_err(|e| AppError::DecryptionError(e.to_string()))?;
 
-        reader.read_exact(&mut tag_buf)?;
+        reader.read_exact(&mut tag_buf).map_err(|e| AppError::DecryptionError(e.to_string()))?;
 
         let decrypted_data = aes_gcm_decrypt(key, &nonce_buf, &data_buf, aad, &tag_buf).unwrap();
 
-        writer.write_all(&decrypted_data)?;
+        writer.write_all(&decrypted_data).map_err(|e| AppError::DecryptionError(e.to_string()))?;
     }
 
     Ok(())
