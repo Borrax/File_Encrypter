@@ -418,7 +418,6 @@ pub fn generate_nonce() -> [u8; 12] {
     result
 }
 
-//TODO: Change method name and change return type to have an error
 /// Encrypts a file using AES256-GCM algorithm
 ///
 /// # Arguments:
@@ -427,7 +426,7 @@ pub fn generate_nonce() -> [u8; 12] {
 /// * `key`: Raw encryption key
 /// * `nonce`: The random generated number to be used for the encryption
 /// * `aad`: The additional authentication data to encrypt the file with
-pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> std::io::Result<()> {
+pub fn encrypt_small_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> std::io::Result<()> {
     let raw_file = read(input_path)?;
 
     let (encrypted, tag) = aes_gcm_encrypt(key, nonce, &raw_file, aad);
@@ -442,7 +441,6 @@ pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &
 }
 
 
-//TODO: Change method name and change return type to have an error
 /// Decrypts a file using AES256-GCM algorithm
 ///
 /// # Arguments:
@@ -450,8 +448,8 @@ pub fn encrypt_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &
 /// * `output path`: Where the output encrypted file to be generated
 /// * `key`: Raw encryption key
 /// * `aad`: The additional authentication data to encrypt the file with
-pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> std::io::Result<()> {
-    let encrypted_file = read(input_path)?;
+pub fn decrypt_small_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u8]) -> Result<(), AppError> {
+    let encrypted_file = read(input_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
 
     let nonce: [u8; 12] = encrypted_file[..12].try_into().unwrap();
     let tag: [u8; 16] = encrypted_file[encrypted_file.len() - 16..].try_into().unwrap();
@@ -459,7 +457,7 @@ pub fn decrypt_file(input_path: &str, output_path: &str, key: &[u8;32], aad: &[u
 
     let decrypted_data = aes_gcm_decrypt(key, &nonce, main_data, aad, &tag).unwrap();
 
-    write(output_path, &decrypted_data)?;
+    write(output_path, &decrypted_data).map_err(|e| AppError::EncryptionError(e.to_string()))?;
 
     Ok(())
 }
