@@ -426,8 +426,8 @@ pub fn generate_nonce() -> [u8; 12] {
 /// * `key`: Raw encryption key
 /// * `nonce`: The random generated number to be used for the encryption
 /// * `aad`: The additional authentication data to encrypt the file with
-pub fn encrypt_small_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> std::io::Result<()> {
-    let raw_file = read(input_path)?;
+pub fn encrypt_small_file(input_path: &str, output_path: &str, key: &[u8;32], nonce: &[u8; 12], aad: &[u8]) -> Result<(), AppError> {
+    let raw_file = read(input_path).map_err(|e| AppError::EncryptionError(e.to_string()))?;
 
     let (encrypted, tag) = aes_gcm_encrypt(key, nonce, &raw_file, aad);
 
@@ -436,7 +436,7 @@ pub fn encrypt_small_file(input_path: &str, output_path: &str, key: &[u8;32], no
     output_bytes.extend_from_slice(&encrypted);
     output_bytes.extend_from_slice(&tag);
 
-    write(output_path, &output_bytes)?;
+    write(output_path, &output_bytes).map_err(|e| AppError::EncryptionError(e.to_string()))?;
     Ok(())
 }
 
