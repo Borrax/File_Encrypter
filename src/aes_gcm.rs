@@ -613,18 +613,18 @@ pub fn run_application(input_data: &UserInputData) -> Result<(), AppError> {
     if input_data.should_encrypt {
         let nonce = generate_nonce();
         if is_large_file {
-            encrypt_large_file(&input_path, &output_path, &key, &nonce, aad)
+            encrypt_large_file(input_path, output_path, &key, &nonce, aad)
                 .map_err(|e| AppError::EncryptionError(e.to_string()))?;
         } else {
-            encrypt_file(&input_path, &output_path, &key, &nonce, aad)
+            encrypt_small_file(input_path, output_path, &key, &nonce, aad)
                 .map_err(|e| AppError::EncryptionError(e.to_string()))?;
         }
     } else {
         if is_large_file {
-            decrypt_large_file(&input_path, &output_path, &key, aad)
+            decrypt_large_file(input_path, output_path, &key, aad)
                 .map_err(|e| AppError::DecryptionError(e.to_string()))?;
         } else {
-            decrypt_file(&input_path, &output_path, &key, aad)
+            decrypt_small_file(input_path, output_path, &key, aad)
                 .map_err(|e| AppError::DecryptionError(e.to_string()))?;
         }
     }
