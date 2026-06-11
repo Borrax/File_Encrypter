@@ -28,3 +28,4 @@ target
 *.vim
 
 tests/*file
+.source_*
