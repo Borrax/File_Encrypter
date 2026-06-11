@@ -3,7 +3,7 @@
 ![rust logo](https://rust-lang.org/logos/rust-logo-512x512.png)
 
 ### General Information:
-Encrypts a file or multiple files by a given path using the AES-265-GCM algorithm as a CLI.
+A CLI tool that encrypts/decrypts a file or multiple files by a given path using the AES-265-GCM algorithm.
 
 If the input file is larger in size (for testing >4MB) it would encrypt/decrypt it one chunk at the time, otherwise it would load it awhole and process it.
 The algorithm is using randomly generated number (nonce) and additional authenticated data (AAD, which for now is a static string) to be used
