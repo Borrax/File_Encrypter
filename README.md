@@ -24,3 +24,4 @@ cargo test --lib aes_gcm::unit_tests::
 ```bash
 cargo doc --open
 ```
+![High-level-flow-diagram](./docs/app-flow-diagram.svg)
