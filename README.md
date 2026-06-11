@@ -3,12 +3,26 @@
 ![rust logo](https://rust-lang.org/logos/rust-logo-512x512.png)
 
 ### General Information:
-Encrypts a file or multiple files by a given path using the AES-265-GCM algorithm.
+Encrypts a file or multiple files by a given path using the AES-265-GCM algorithm as a CLI.
+
+If the input file is larger in size (for testing >4MB) it would encrypt/decrypt it one chunk at the time, otherwise it would load it awhole and process it.
+The algorithm is using randomly generated number (nonce) and additional authenticated data (AAD, which for now is a static string) to be used
+together with the encryption.
+
+You can also check the [high-level flow diagram](#high-level-flow-diagram)
 
 ### Usage:
 ```bash
-cargo run -- <file_path>
+cargo run -- <-k <encryption_key> -i <input_file_path> [-o <output_file_path>]
 ```
+or if you have the built target:
+```bash
+<target_name> -k <encryption_key> -i <input_file_path> [-o <output_file_path>]
+```
+
+By default it would encrypt a file. If you need to decrypt it use the ```-d``` flag.
+
+For general help use the ```-h``` flag.
 
 ### Testing
 Run integration tests:
@@ -24,4 +38,7 @@ cargo test --lib aes_gcm::unit_tests::
 ```bash
 cargo doc --open
 ```
-![High-level-flow-diagram](./docs/app-flow-diagram.svg)
+
+### High-level flow diagram
+
+![High-level_flow_diagram](./docs/app_flow_diagram.svg)
