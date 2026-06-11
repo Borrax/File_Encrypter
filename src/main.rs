@@ -9,5 +9,5 @@ fn main() {
         }
     };
 
-    run_application(&input_data);
+    let _ = run_application(&input_data);
 }
